@@ -5,9 +5,10 @@ from torch import Tensor
 from torch.nn import Module, Linear, ReLU, LeakyReLU, Sigmoid, Sequential, GRUCell
 from torch_geometric.nn import MessagePassing
 
-from dataclasses import fields
 from config import NeuralExecutionConfig
 from utils import fc_edge_index
+from utils.graphs import pairwise_edge_distance
+from utils.debugging import test_gradient
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -37,7 +38,7 @@ class PrimsSolver(Module):
         h = torch.zeros((self.num_nodes, self.latent_dim))
         prev_tree = torch.zeros(self.num_nodes, 1).long()
         edge_index = fc_edge_index(self.num_nodes)
-        edge_weights = (X[edge_index[0]] - X[edge_index[1]]).pow(2).sum(1).sqrt()
+        edge_weights = pairwise_edge_distance(X, edge_index)
 
         for step in range(self.num_nodes - 1):
             encoded = self.encoder(prev_tree, h)
@@ -169,7 +170,3 @@ class PredecessorDecoder(Module):
 
         out = out.reshape((-1, self.n_outputs))
         return out
-
-
-
-

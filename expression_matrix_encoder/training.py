@@ -1,5 +1,5 @@
 from config import EncoderClusterConfig
-from utils import combine_module_params
+from utils import combine_params
 from expression_matrix_encoder.models import AutoEncoder, CentroidPool
 
 import torch
@@ -26,12 +26,17 @@ def train_autoencoder_clusterer(
     Returns:
         Tuple[AutoEncoder, CentroidPool]: The trained autoencoder and centroid pool.
     """
-    # recon_loss_fn = config.recon_loss_fn
-    # cluster_loss_fn = config.cluster_loss_fn
+    if config.load_autoencoder_from:
+        autoencoder = autoencoder.load_state_dict(torch.load(config.load_autoencoder_from))
+    if config.load_clustering_from:
+        pool = pool.load_state_dict(torch.load(config.load_clustering_from))
+    if config.load_autoencoder_from and config.load_clustering_from:
+        return autoencoder, pool
+
     recon_loss_fn = torch.nn.MSELoss()
     cluster_loss_fn = torch.nn.MSELoss()
 
-    params = combine_module_params(autoencoder, pool)
+    params = combine_params(autoencoder, pool)
     optimizer = torch.optim.Adam(params, lr=config.learning_rate)
 
     dataset = DataLoader(data)
@@ -59,5 +64,10 @@ def train_autoencoder_clusterer(
                 total_recon_loss += recon_loss.item()
 
         print(f"Epoch finished. Mean loss = {mean_loss}, cluster loss = {total_cluster_loss}, reconstruction loss = {total_recon_loss}")
+
+    if config.save_autoencoder_to:
+        torch.save(autoencoder.state_dict(), config.save_autoencoder_to)
+    if config.save_clustering_to:
+        torch.save(pool.state_dict(), config.save_clustering_to)
 
     return autoencoder, pool

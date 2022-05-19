@@ -5,6 +5,7 @@ from config import NeuralExecutionConfig
 
 from neural_execution_engine.models import PrimsSolver
 
+
 device = 'cpu'
 
 
@@ -14,6 +15,10 @@ def instantiate_prims_solver(
 ) -> PrimsSolver:
 
     solver = PrimsSolver.from_config(config)
+
+    if config.load_from:
+        solver.load_state_dict(torch.load(config.load_from))
+        return solver
 
     mst_loss_fn = torch.nn.BCELoss()
     pred_loss_fn = torch.nn.CrossEntropyLoss()
@@ -61,6 +66,9 @@ def instantiate_prims_solver(
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+    if config.save_to:
+        torch.save(solver.state_dict(), config.save_to)
 
     return solver
 

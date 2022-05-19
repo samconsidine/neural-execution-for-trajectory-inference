@@ -3,7 +3,7 @@ import torch
 from typing import List
 
 
-def combine_module_params(*modules: List[torch.nn.Module]) -> torch.nn.Parameter:
+def combine_params(*modules: List[torch.nn.Module]) -> torch.nn.Parameter:
     params = []
     for module in modules:
         params += module.parameters()

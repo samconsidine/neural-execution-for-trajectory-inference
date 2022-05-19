@@ -49,3 +49,17 @@ def fc_edge_index(size: int) -> Tensor:
         Tensor: The edge index
     """
     return torch.ones(size, size).nonzero().T
+
+
+def pairwise_edge_distance(X: Tensor, edge_index: Tensor) -> Tensor:
+    """Calculate the length of all edges for points X.
+
+    Args:
+        X (Tensor): Points between which edge distances are calculated
+        edge_index (Tensor): Edges
+
+    Returns:
+        Tensor: Pairwise edge lenths.
+    """
+    # return (X[edge_index[0]] - X[edge_index[1]]).pow(2).sum(-1).sqrt()
+    return torch.cdist(X, X).view(-1)
