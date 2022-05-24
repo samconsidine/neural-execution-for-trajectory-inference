@@ -22,6 +22,7 @@ from utils.plotting import plot_clusters, plot_mst, test_results
 
 config = default_config
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def train_clusterer(
     X: Tensor, 
@@ -77,8 +78,9 @@ def train_narti(config: ExperimentConfig):
         lr=config.learning_rate
     )
 
+    train_dataset = DataLoader(list(zip(X, target)), batch_size=config.batch_size).to(device)
     for epoch in range(config.n_epochs):
-        for batch_x, batch_y in DataLoader(list(zip(X, target)), batch_size=config.batch_size):
+        for batch_x, batch_y in train_dataset:
             latent, reconstruction = autoencoder(batch_x)
 
             edges = fc_edge_index(config.number_of_centroids)

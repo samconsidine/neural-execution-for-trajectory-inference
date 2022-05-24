@@ -29,6 +29,7 @@ class PrimsSolver(Module):
         self.processor = processor
         self.mst_decoder = mst_decoder
         self.predecessor_decoder = predecessor_decoder
+        self.to(device)
 
     def forward(self, data) -> Tensor:
         # <<<< Go through this with dobrik tomorrow <<<<

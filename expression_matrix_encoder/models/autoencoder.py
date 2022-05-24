@@ -8,7 +8,7 @@ from tqdm import tqdm
 from typing import List
 
 
-device = 'cpu'
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class AutoEncoder(Module):

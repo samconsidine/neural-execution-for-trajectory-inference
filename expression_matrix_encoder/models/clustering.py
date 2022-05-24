@@ -11,7 +11,7 @@ from typing import Optional
 from sklearn.cluster import KMeans
 from expression_matrix_encoder.models import StackedAE 
 
-device = 'cpu'
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class NeuralisedClustering(Module):
