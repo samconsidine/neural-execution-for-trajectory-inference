@@ -93,7 +93,6 @@ class IDEC(nn.Module):
         self.coords = nn.Parameter(initial_cluster_centers)
 
     def pretrain(self, train_loader, path, lr=0.001, num_epochs=50, cuda=False):
-
         self.ae.apply(init_weights)
         if self.binary == True:
             criterion = "cross-entropy"

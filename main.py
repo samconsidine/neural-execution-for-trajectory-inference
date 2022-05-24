@@ -89,7 +89,6 @@ def train_narti(config: ExperimentConfig):
 
             data = Data(x=centroid_pool.coords, edge_index=edges.to(device), edge_attr=weights.to(device))
             predecessor_logits = prims_solver(data)
-            print('one')
             # if not sanity_check_neural_exec(prims_solver, prims_dataset, centroid_pool):
             #     breakpoint()
             mst = Graph(nodes=centroid_pool.coords, edge_index=edges, edge_attr=weights,

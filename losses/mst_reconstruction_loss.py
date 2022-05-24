@@ -18,6 +18,6 @@ def mst_reconstruction_loss_fn(
     reconstructions = autoencoder.decoder(projected_coords)
     reconstruction_loss = ((X.unsqueeze(1) - reconstructions).pow(2)).sum(-1).sqrt()
     reg = (mst.probabilities.view(-1).unsqueeze(0) * projection_probabilities).sum(1)
-    loss = reconstruction_loss * (mst.probabilities.view(-1).unsqueeze(0) * projection_probabilities) / reg
+    loss = reconstruction_loss * (mst.probabilities.view(-1).unsqueeze(0) * projection_probabilities) / reg.unsqueeze(-1)
 
     return loss.mean()
