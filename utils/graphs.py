@@ -92,9 +92,13 @@ def sanity_check_neural_exec(prims_solver, prims_dataset, centroid_pool):
     new_centroid_pool = CentroidPool(centroid_pool.n_clusts, centroid_pool.n_dims)
     new_centroid_pool.coords = torch.nn.Parameter(prims_dataset[0].geom)
 
-    orig_output  = prims_solver(prims_dataset[0])
-    dataset_output = prims_solver(geom_to_fc_graph(prims_dataset[0].geom))
-    centroids_output = prims_solver(geom_to_fc_graph(new_centroid_pool.coords))
+    orig = prims_dataset[0]
+    dataset = geom_to_fc_graph(prims_dataset[0].geom)
+    centroids = geom_to_fc_graph(new_centroid_pool.coords)
+
+    orig_output  = prims_solver(orig)
+    dataset_output = prims_solver(dataset)
+    centroids_output = prims_solver(centroids)
     print(f'{torch.allclose(orig_output, dataset_output)=}')
     print(f'{torch.allclose(centroids_output, dataset_output)=}')
     print(f'{torch.allclose(centroids_output, orig_output)=}')
