@@ -11,6 +11,8 @@ from torch.utils.data import DataLoader
 from typing import Tuple
 
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 def train_autoencoder_clusterer(
     data: Tensor, 
     target: Tensor,
@@ -30,8 +32,8 @@ def train_autoencoder_clusterer(
         Tuple[AutoEncoder, CentroidPool]: The trained autoencoder and centroid pool.
     """
     if config.load_model:
-        autoencoder.load_state_dict(torch.load(config.load_autoencoder_from))
-        pool.load_state_dict(torch.load(config.load_clustering_from))
+        autoencoder.load_state_dict(torch.load(config.load_autoencoder_from, map_location=device))
+        pool.load_state_dict(torch.load(config.load_clustering_from, map_location=device))
         print('print loaded both models from file, skipping autoencoder training')
         return autoencoder, pool
 

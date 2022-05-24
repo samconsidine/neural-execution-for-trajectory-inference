@@ -109,6 +109,10 @@ def train_narti(config: ExperimentConfig):
             optimizer.step()
 
             loss_total += loss.item()
+            with torch.no_grad():
+                latent, _ = autoencoder(X)
+                pred_logits = prims_solver(data)
+                test_results(X, centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
 
         epoch_loss = loss_total / len(train_dataset)
         print(epoch_loss)
@@ -119,10 +123,6 @@ def train_narti(config: ExperimentConfig):
                 torch.save(autoencoder.state_dict(), config.encoder_cluster_config.save_autoencoder_to)
                 torch.save(centroid_pool.state_dict(), config.encoder_cluster_config.save_clustering_to)
                 torch.save(prims_solver.state_dict(), config.neural_exec_config.save_to)
-        # with torch.no_grad():
-            # latent, _ = autoencoder(X)
-            # pred_logits = prims_solver(data)
-            # test_results(X, centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
 
 
 if __name__ == "__main__":

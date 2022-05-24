@@ -8,7 +8,7 @@ from numpy import number
 
 # SHARED PARAMETERS
 EXPERIMENT_NAME = "test"
-LATENT_DIM = 32
+LATENT_DIM = 2
 NUM_NODES = 10
 
 
@@ -58,9 +58,9 @@ class ExperimentConfig:
     n_centroids:            int                    = NUM_NODES
     n_epochs:               int                    = 1000
     batch_size:             int                    = 128
-    recon_loss_coef:        float                  = 1.
+    recon_loss_coef:        float                  = 0.
     mst_loss_coef:          float                  = 500.
-    cluster_loss_coef:      float                  = 10.
+    cluster_loss_coef:      float                  = 0.
     learning_rate:          float                  = 3e-3
     save_models:            bool                   = True
 

@@ -7,7 +7,8 @@ from config import NeuralExecutionConfig
 from neural_execution_engine.models import PrimsSolver
 
 
-device = 'cpu'
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 def batch_mst_acc(preds, real):
     with torch.no_grad():
@@ -34,7 +35,7 @@ def instantiate_prims_solver(
     solver = PrimsSolver.from_config(config)
 
     if config.load_model:
-        solver.load_state_dict(torch.load(config.load_from))
+        solver.load_state_dict(torch.load(config.load_from, map_location=device))
         return solver
 
     mst_loss_fn = torch.nn.BCEWithLogitsLoss()
