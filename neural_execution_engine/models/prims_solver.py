@@ -33,9 +33,9 @@ class PrimsSolver(Module):
 
     def forward(self, data) -> Tensor:
         # <<<< Go through this with dobrik tomorrow <<<<
-        h = torch.zeros((self.num_nodes, self.latent_dim))
+        h = torch.zeros((self.num_nodes, self.latent_dim), device=device)
         # prev_tree = torch.zeros(self.num_nodes, 1).long()
-        prev_tree = data.x[:, 0].unsqueeze(-1)  # self.num_nodes -> self.num_nodes, 1
+        prev_tree = data.x[:, 0].unsqueeze(-1).to(device)  # self.num_nodes -> self.num_nodes, 1
         # edge_weights = pairwise_edge_distance(X, edge_index)
 
         for step in range(self.num_nodes - 1):
@@ -168,9 +168,10 @@ class PredecessorDecoder(Module):
 
         out = self.layers(torch.cat((left_encoded, left_h, right_encoded, right_h), axis=1))
 
-        result = torch.full((h.shape[0], h.shape[0]), -1e9)
+        result = torch.full((h.shape[0], h.shape[0]), -1e9).to(device)
         result[left_edge, right_edge] = out.squeeze(-1)
 
         #out = out.reshape((-1, self.n_outputs))
         # return out
         return result
+

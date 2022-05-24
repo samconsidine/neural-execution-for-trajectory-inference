@@ -8,7 +8,7 @@ from numpy import number
 
 # SHARED PARAMETERS
 EXPERIMENT_NAME = "test"
-LATENT_DIM = 2
+LATENT_DIM = 32
 NUM_NODES = 10
 
 
@@ -56,12 +56,13 @@ class ExperimentConfig:
     name:                   str                    = EXPERIMENT_NAME
     latent_dimension:       int                    = LATENT_DIM
     n_centroids:            int                    = NUM_NODES
-    n_epochs:               int                    = 10
+    n_epochs:               int                    = 1000
     batch_size:             int                    = 128
     recon_loss_coef:        float                  = 1.
     mst_loss_coef:          float                  = 500.
     cluster_loss_coef:      float                  = 10.
-    learning_rate:          float                  = 3e-5
+    learning_rate:          float                  = 3e-3
+    save_models:            bool                   = True
 
     data_config:            DataConfig             = DataConfig()
     encoder_cluster_config: EncoderClusterConfig   = EncoderClusterConfig()

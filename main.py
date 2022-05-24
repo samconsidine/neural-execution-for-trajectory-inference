@@ -58,7 +58,7 @@ def train_narti(config: ExperimentConfig):
         n_centroids=config.number_of_centroids,
         config=config.encoder_cluster_config
     )
-    latent, recon = autoencoder(X)
+    latent, recon = autoencoder(X.to(device))
     clusters = centroid_pool(latent)
     # plot_clusters(latent, centroid_pool.coords, clusters.argmax(1), y)
 
@@ -78,15 +78,17 @@ def train_narti(config: ExperimentConfig):
         lr=config.learning_rate
     )
 
-    train_dataset = DataLoader(list(zip(X, target)), batch_size=config.batch_size).to(device)
+    train_dataset = DataLoader(list(zip(X.to(device), torch.tensor(target).to(device))), batch_size=config.batch_size)
+    lowest_loss = 1000
     for epoch in range(config.n_epochs):
+        loss_total = 0
         for batch_x, batch_y in train_dataset:
             latent, reconstruction = autoencoder(batch_x)
 
             edges = fc_edge_index(config.number_of_centroids)
             weights = pairwise_edge_distance(centroid_pool.coords, edges)
 
-            data = Data(x=centroid_pool.coords, edge_index=edges, edge_attr=weights)
+            data = Data(x=centroid_pool.coords, edge_index=edges.to(device), edge_attr=weights.to(device))
             predecessor_logits = prims_solver(data)
             mst = Graph(nodes=centroid_pool.coords, edge_index=edges, edge_attr=weights,
                         probabilities=predecessor_logits.softmax(1))
@@ -96,7 +98,7 @@ def train_narti(config: ExperimentConfig):
             
             cluster_loss = cluster_training_loss_fn(latent, batch_y, centroid_pool)
 
-            print(f"{mst_recon_loss=}, {recon_loss=}, {cluster_loss=}")
+            # print(f"{mst_recon_loss=}, {recon_loss=}, {cluster_loss=}")
 
             loss = (config.recon_loss_coef * recon_loss
                   + config.mst_loss_coef * mst_recon_loss
@@ -104,13 +106,19 @@ def train_narti(config: ExperimentConfig):
 
             optimizer.zero_grad()
             loss.backward()
-            ensure_gradients(autoencoder.encoder, autoencoder.decoder, centroid_pool,
-                             prims_solver.encoder, prims_solver.processor, prims_solver.mst_decoder,
-                             prims_solver.predecessor_decoder)
             optimizer.step()
 
-            print(loss.item())
+            loss_total += loss.item()
 
+        epoch_loss = loss_total / len(train_dataset)
+        print(epoch_loss)
+
+        lowest_loss = min(epoch_loss, lowest_loss)
+        if epoch_loss == lowest_loss:
+            if config.save_models:
+                torch.save(autoencoder.state_dict(), config.encoder_cluster_config.save_autoencoder_to)
+                torch.save(centroid_pool.state_dict(), config.encoder_cluster_config.save_clustering_to)
+                torch.save(prims_solver.state_dict(), config.neural_exec_config.save_to)
         # with torch.no_grad():
             # latent, _ = autoencoder(X)
             # pred_logits = prims_solver(data)
