@@ -43,7 +43,7 @@ def train_autoencoder_clusterer(
     params = combine_params(autoencoder, pool)
     optimizer = torch.optim.Adam(params, lr=config.learning_rate)
 
-    dataset = DataLoader(list(zip(data, target)), batch_size=128)
+    dataset = DataLoader(list(zip(data.to(device), target.to(device))), batch_size=128)
 
     for epoch in range(config.n_epochs):
         mean_loss, total_cluster_loss, total_recon_loss = 0, 0, 0

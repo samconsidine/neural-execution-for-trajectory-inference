@@ -62,7 +62,7 @@ class ExperimentConfig:
     mst_loss_coef:          float                  = 500.
     cluster_loss_coef:      float                  = 0.
     learning_rate:          float                  = 3e-3
-    save_models:            bool                   = True
+    save_models:            bool                   = False
 
     data_config:            DataConfig             = DataConfig()
     encoder_cluster_config: EncoderClusterConfig   = EncoderClusterConfig()

@@ -34,9 +34,7 @@ def train_clusterer(
 
     autoencoder = AutoEncoder(X.shape[1], latent_dim)
     centroid_pool = CentroidPool(n_centroids, latent_dim)
-    label_encoder = LabelEncoder()
-    target = label_encoder.fit_transform(y)
-    autoencoder, centroid_pool = train_autoencoder_clusterer(X, target, autoencoder, centroid_pool, config)
+    autoencoder, centroid_pool = train_autoencoder_clusterer(X, y, autoencoder, centroid_pool, config)
 
     return autoencoder, centroid_pool
 
@@ -48,12 +46,12 @@ def train_narti(config: ExperimentConfig):
     X = torch.tensor(paul15.X).float()
     y = paul15.obs['paul15_clusters'].values
     label_encoder = LabelEncoder()
-    target = label_encoder.fit_transform(y)
+    target = torch.tensor(label_encoder.fit_transform(y)).to(device)
     config.number_of_centroids = y.unique().shape[0]
 
     autoencoder, centroid_pool = train_clusterer(
         X=X,
-        y=y,
+        y=target,
         latent_dim=config.latent_dimension, 
         n_centroids=config.number_of_centroids,
         config=config.encoder_cluster_config
@@ -109,10 +107,10 @@ def train_narti(config: ExperimentConfig):
             optimizer.step()
 
             loss_total += loss.item()
-            with torch.no_grad():
-                latent, _ = autoencoder(X)
-                pred_logits = prims_solver(data)
-                test_results(X, centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
+            # with torch.no_grad():
+            #     latent, _ = autoencoder(X.to(device))
+            #     pred_logits = prims_solver(data)
+            #     test_results(X.to(device), centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
 
         epoch_loss = loss_total / len(train_dataset)
         print(epoch_loss)
