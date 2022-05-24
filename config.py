@@ -8,7 +8,7 @@ from numpy import number
 
 # SHARED PARAMETERS
 EXPERIMENT_NAME = "test"
-LATENT_DIM = 32
+LATENT_DIM = 2
 NUM_NODES = 10
 
 
