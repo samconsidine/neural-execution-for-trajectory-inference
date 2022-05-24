@@ -1,3 +1,4 @@
+from sklearn.preprocessing import LabelEncoder
 import torch
 from torch import Tensor
 from torch.utils.data import DataLoader
@@ -6,8 +7,8 @@ import scanpy as sc
 
 from config import EncoderClusterConfig, ExperimentConfig, default_config
 from expression_matrix_encoder.models import AutoEncoder, CentroidPool, KMadness
-from expression_matrix_encoder.models.clustering import IDEC
 from expression_matrix_encoder.training import train_autoencoder_clusterer
+from losses.cluster_loss import cluster_training_loss_fn
 from neural_execution_engine.datagen.prims import generate_prims_dataset
 from neural_execution_engine.train import instantiate_prims_solver
 from losses import cluster_loss_fn, mst_reconstruction_loss_fn
@@ -17,13 +18,14 @@ from typing import Tuple
 from utils.graphs import Graph, fc_edge_index, pairwise_edge_distance, geom_to_fc_graph
 from utils.torch import combine_params, seed_everything
 from utils.debugging import ensure_gradients, test_gradient
-from utils.plotting import plot_mst, test_results
+from utils.plotting import plot_clusters, plot_mst, test_results
 
 config = default_config
 
 
 def train_clusterer(
     X: Tensor, 
+    y: Tensor,
     latent_dim: int, 
     n_centroids: int, 
     config: EncoderClusterConfig
@@ -31,7 +33,9 @@ def train_clusterer(
 
     autoencoder = AutoEncoder(X.shape[1], latent_dim)
     centroid_pool = CentroidPool(n_centroids, latent_dim)
-    autoencoder, centroid_pool = train_autoencoder_clusterer(X, autoencoder, centroid_pool, config)
+    label_encoder = LabelEncoder()
+    target = label_encoder.fit_transform(y)
+    autoencoder, centroid_pool = train_autoencoder_clusterer(X, target, autoencoder, centroid_pool, config)
 
     return autoencoder, centroid_pool
 
@@ -41,25 +45,21 @@ def train_narti(config: ExperimentConfig):
 
     paul15 = sc.datasets.paul15()
     X = torch.tensor(paul15.X).float()
+    y = paul15.obs['paul15_clusters'].values
+    label_encoder = LabelEncoder()
+    target = label_encoder.fit_transform(y)
+    config.number_of_centroids = y.unique().shape[0]
 
-    # autoencoder, centroid_pool = train_clusterer(
-    #     X=X,
-    #     latent_dim=config.latent_dimension, 
-    #     n_centroids=config.number_of_centroids,
-    #     config=config.encoder_cluster_config
-    # )
-
-    autoencoder_clust = IDEC(X.shape[1], [256, 128, 128], 32, [128, 128, 256], 10)
-    from itertools import repeat
-    from sklearn.preprocessing import LabelEncoder
-    label_enc = LabelEncoder()
-    train_data_etc = DataLoader([(x, y, blank) for x, y, blank in zip(X, torch.tensor(label_enc.fit_transform(paul15.obs['paul15_clusters'].values)), repeat(1))], batch_size=32)
-    if config.encoder_cluster_config.load_model:
-        autoencoder_clust.load_state_dict(torch.load(config.encoder_cluster_config.load_autoencoder_from))
-    else:
-        autoencoder_clust.fit(train_data_etc, train_data_etc, './results/one')
-    autoencoder = autoencoder_clust.ae
-    centroid_pool = autoencoder_clust
+    autoencoder, centroid_pool = train_clusterer(
+        X=X,
+        y=y,
+        latent_dim=config.latent_dimension, 
+        n_centroids=config.number_of_centroids,
+        config=config.encoder_cluster_config
+    )
+    latent, recon = autoencoder(X)
+    clusters = centroid_pool(latent)
+    # plot_clusters(latent, centroid_pool.coords, clusters.argmax(1), y)
 
     seed_everything(2)
 
@@ -78,8 +78,8 @@ def train_narti(config: ExperimentConfig):
     )
 
     for epoch in range(config.n_epochs):
-        for batch_x in DataLoader(X, batch_size=config.batch_size):
-            reconstruction, assignments, latent = autoencoder_clust(batch_x)
+        for batch_x, batch_y in DataLoader(list(zip(X, target)), batch_size=config.batch_size):
+            latent, reconstruction = autoencoder(batch_x)
 
             edges = fc_edge_index(config.number_of_centroids)
             weights = pairwise_edge_distance(centroid_pool.coords, edges)
@@ -91,7 +91,8 @@ def train_narti(config: ExperimentConfig):
 
             mst_recon_loss = mst_reconstruction_loss_fn(latent, mst, batch_x, autoencoder)
             recon_loss = recon_loss_fn(reconstruction, batch_x)
-            cluster_loss = cluster_loss_fn(latent, centroid_pool.coords)
+            
+            cluster_loss = cluster_training_loss_fn(latent, batch_y, centroid_pool)
 
             print(f"{mst_recon_loss=}, {recon_loss=}, {cluster_loss=}")
 
@@ -108,10 +109,10 @@ def train_narti(config: ExperimentConfig):
 
             print(loss.item())
 
-            with torch.no_grad():
-                latent, _ = autoencoder(X)
-                pred_logits = prims_solver(data)
-                test_results(X, centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
+        # with torch.no_grad():
+            # latent, _ = autoencoder(X)
+            # pred_logits = prims_solver(data)
+            # test_results(X, centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
 
 
 if __name__ == "__main__":

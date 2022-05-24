@@ -20,3 +20,8 @@ def cluster_loss_fn(X: Tensor, coords: Tensor) -> float:
         loss += (data - mu).abs().sum(1).sum()
 
     return loss
+
+
+def cluster_training_loss_fn(latent, target, pool):
+    cluster_distances = torch.cdist(latent, pool.coords)
+    return cluster_distances.gather(1, target.unsqueeze(-1)).mean()

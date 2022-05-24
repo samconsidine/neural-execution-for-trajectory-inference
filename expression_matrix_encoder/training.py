@@ -1,5 +1,6 @@
 from tqdm import tqdm
 from config import EncoderClusterConfig
+from losses.cluster_loss import cluster_training_loss_fn
 from utils import combine_params
 from expression_matrix_encoder.models import AutoEncoder, CentroidPool
 
@@ -12,6 +13,7 @@ from typing import Tuple
 
 def train_autoencoder_clusterer(
     data: Tensor, 
+    target: Tensor,
     autoencoder: AutoEncoder, 
     pool: CentroidPool, 
     config: EncoderClusterConfig
@@ -34,22 +36,21 @@ def train_autoencoder_clusterer(
         return autoencoder, pool
 
     recon_loss_fn = torch.nn.MSELoss()
-    cluster_loss_fn = torch.nn.MSELoss()
+    cluster_loss_fn = cluster_training_loss_fn
 
     params = combine_params(autoencoder, pool)
     optimizer = torch.optim.Adam(params, lr=config.learning_rate)
 
-    dataset = DataLoader(data)
+    dataset = DataLoader(list(zip(data, target)), batch_size=128)
 
     for epoch in range(config.n_epochs):
         mean_loss, total_cluster_loss, total_recon_loss = 0, 0, 0
 
-        for X in dataset:
+        for X, y in dataset:
             latent, reconstruction = autoencoder(X)
             recon_loss = recon_loss_fn(reconstruction, X)
 
-            min_dist, min_idx = torch.cdist(latent, pool.coords).min(1)
-            clust_loss = cluster_loss_fn(min_dist, torch.zeros_like(min_dist))
+            clust_loss = cluster_loss_fn(latent, y, pool)
 
             loss = (config.clust_loss_coef * clust_loss 
                   + config.recon_loss_coef * recon_loss)

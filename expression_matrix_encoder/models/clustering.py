@@ -18,13 +18,14 @@ class NeuralisedClustering(Module):
     def __init__(self):
         super().__init__()
 
-
 class CentroidPool(NeuralisedClustering):
     def __init__(self, n_clusts, n_dims):
         super().__init__()
         self.coords = Parameter(torch.rand(n_clusts, n_dims, requires_grad=True))
         self.to(device)
 
+    def forward(self, X):
+        return torch.cdist(X, self.coords)
 
 class KMadness(NeuralisedClustering):
     def __init__(self, n_clusts, n_dims):
