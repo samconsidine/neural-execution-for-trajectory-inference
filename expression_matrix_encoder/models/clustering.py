@@ -21,6 +21,8 @@ class NeuralisedClustering(Module):
 class CentroidPool(NeuralisedClustering):
     def __init__(self, n_clusts, n_dims):
         super().__init__()
+        self.n_clusts = n_clusts
+        self.n_dims = n_dims
         self.coords = Parameter(torch.rand(n_clusts, n_dims, requires_grad=True))
         self.to(device)
 

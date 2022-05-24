@@ -1,3 +1,4 @@
+import sys
 from sklearn.preprocessing import LabelEncoder
 import torch
 from torch import Tensor
@@ -15,7 +16,7 @@ from losses import cluster_loss_fn, mst_reconstruction_loss_fn
 
 from typing import Tuple
 
-from utils.graphs import Graph, fc_edge_index, pairwise_edge_distance, geom_to_fc_graph
+from utils.graphs import Graph, fc_edge_index, pairwise_edge_distance, geom_to_fc_graph, sanity_check_neural_exec
 from utils.torch import combine_params, seed_everything
 from utils.debugging import ensure_gradients, test_gradient
 from utils.plotting import plot_clusters, plot_mst, test_results
@@ -88,6 +89,9 @@ def train_narti(config: ExperimentConfig):
 
             data = Data(x=centroid_pool.coords, edge_index=edges.to(device), edge_attr=weights.to(device))
             predecessor_logits = prims_solver(data)
+            print('one')
+            # if not sanity_check_neural_exec(prims_solver, prims_dataset, centroid_pool):
+            #     breakpoint()
             mst = Graph(nodes=centroid_pool.coords, edge_index=edges, edge_attr=weights,
                         probabilities=predecessor_logits.softmax(1))
 
@@ -107,10 +111,11 @@ def train_narti(config: ExperimentConfig):
             optimizer.step()
 
             loss_total += loss.item()
-            # with torch.no_grad():
-            #     latent, _ = autoencoder(X.to(device))
-            #     pred_logits = prims_solver(data)
-            #     test_results(X.to(device), centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
+            if len(sys.argv) > 1 and sys.argv[1] == 'plot':
+                with torch.no_grad():
+                    latent, _ = autoencoder(X.to(device))
+                    pred_logits = prims_solver(data)
+                    test_results(X.to(device), centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
 
         epoch_loss = loss_total / len(train_dataset)
         print(epoch_loss)

@@ -8,7 +8,7 @@ from numpy import number
 
 # SHARED PARAMETERS
 EXPERIMENT_NAME = "test"
-LATENT_DIM = 2
+LATENT_DIM = 32
 NUM_NODES = 10
 
 
@@ -39,14 +39,14 @@ class NeuralExecutionConfig:
     name:                   str                    = EXPERIMENT_NAME
     latent_dim:             int                    = 32
     n_nodes:                int                    = NUM_NODES
-    n_epochs:               int                    = 10
+    n_epochs:               int                    = 0
     n_data:                 int                    = 1000
     processor_in_channels:  int                    = 16
     node_features:          int                    = 1
     batch_size:             int                    = 1
     learning_rate:          float                  = 3e-4
     
-    load_model:             bool                   = True
+    load_model:             bool                   = False
     load_from:              Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_neural_exec_{LATENT_DIM}d.pt'
     save_to:                Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_neural_exec_{LATENT_DIM}d.pt'
 
@@ -58,9 +58,9 @@ class ExperimentConfig:
     n_centroids:            int                    = NUM_NODES
     n_epochs:               int                    = 1000
     batch_size:             int                    = 128
-    recon_loss_coef:        float                  = 0.
-    mst_loss_coef:          float                  = 500.
-    cluster_loss_coef:      float                  = 0.
+    recon_loss_coef:        float                  = .1
+    mst_loss_coef:          float                  = 5.
+    cluster_loss_coef:      float                  = 1.
     learning_rate:          float                  = 3e-3
     save_models:            bool                   = False
 
