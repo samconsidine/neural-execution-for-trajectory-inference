@@ -27,7 +27,7 @@ class EncoderClusterConfig:
     clust_loss_coef:        float                  = 10.
     recon_loss_coef:        float                  = 1.
 
-    load_model:             bool                   = True
+    load_model:             bool                   = False
     load_autoencoder_from:  Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_autoencoder_{LATENT_DIM}d.pt'
     load_clustering_from:   Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_clustering_{LATENT_DIM}d.pt'
     save_autoencoder_to:    Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_autoencoder_{LATENT_DIM}d.pt'
@@ -39,7 +39,7 @@ class NeuralExecutionConfig:
     name:                   str                    = EXPERIMENT_NAME
     latent_dim:             int                    = 32
     n_nodes:                int                    = NUM_NODES
-    n_epochs:               int                    = 0
+    n_epochs:               int                    = 10
     n_data:                 int                    = 1000
     processor_in_channels:  int                    = 16
     node_features:          int                    = 1
