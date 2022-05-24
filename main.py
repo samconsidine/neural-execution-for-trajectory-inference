@@ -17,7 +17,7 @@ from typing import Tuple
 from utils.graphs import Graph, fc_edge_index, pairwise_edge_distance, geom_to_fc_graph
 from utils.torch import combine_params, seed_everything
 from utils.debugging import ensure_gradients, test_gradient
-from utils.plotting import plot_mst, test_results
+from utils.plotting import plot_mst, plot_output, test_results
 
 config = default_config
 
@@ -57,9 +57,10 @@ def train_narti(config: ExperimentConfig):
     if config.encoder_cluster_config.load_model:
         autoencoder_clust.load_state_dict(torch.load(config.encoder_cluster_config.load_autoencoder_from))
     else:
-        autoencoder_clust.fit(train_data_etc, train_data_etc, './results/one')
+        autoencoder_clust.fit(train_data_etc, train_data_etc, config.encoder_cluster_config.load_autoencoder_from)
     autoencoder = autoencoder_clust.ae
     centroid_pool = autoencoder_clust
+    plot_output(latent, assignments, paul15.obs['paul15_clusters'])
 
     seed_everything(2)
 
@@ -76,6 +77,8 @@ def train_narti(config: ExperimentConfig):
         combine_params(autoencoder, centroid_pool, prims_solver),
         lr=config.learning_rate
     )
+
+    reconstruction, assignments, latent = autoencoder_clust(X)
 
     for epoch in range(config.n_epochs):
         for batch_x in DataLoader(X, batch_size=config.batch_size):

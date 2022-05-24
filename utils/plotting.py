@@ -36,3 +36,18 @@ def test_results(inputs, pool, labels, tree_logits, ae):
         # plt.savefig(f'plots/mst/{sys.argv[1]}/{epoch}.png')
         # plt.clf()
         plt.show()
+
+
+def plot_output(latent, assignments, labels):
+    with torch.no_grad():
+        if outs.shape[1] > 2:
+            pca = PCA(2)
+            outs = pca.fit_transform(latent)
+        xs = outs[:, 0]
+        ys = outs[:, 1]
+
+        sns.scatterplot(x=xs, y=ys, hue=assignments, legend=False)
+        plt.show()
+
+        sns.scatterplot(x=xs, y=ys, hue=labels.values, legend=False)
+        plt.show()
