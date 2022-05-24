@@ -25,7 +25,7 @@ class EncoderClusterConfig:
     clust_loss_coef:        float                  = 0.01
     recon_loss_coef:        float                  = 1.
 
-    load_model:             bool                   = False
+    load_model:             bool                   = True
     load_autoencoder_from:  Optional[str]          = f'./saved_models/test_autoencoder_{LATENT_DIM}d.pt'
     load_clustering_from:   Optional[str]          = f'./saved_models/test_clustering_{LATENT_DIM}d.pt'
     save_autoencoder_to:    Optional[str]          = f'./saved_models/test_autoencoder_{LATENT_DIM}d.pt'
@@ -44,7 +44,7 @@ class NeuralExecutionConfig:
     batch_size:             int                    = 1
     learning_rate:          float                  = 3e-4
     
-    load_model:             bool                   = False
+    load_model:             bool                   = True
     load_from:              Optional[str]          = f'./saved_models/test_neural_exec_{LATENT_DIM}d.pt'
     save_to:                Optional[str]          = f'./saved_models/test_neural_exec_{LATENT_DIM}d.pt'
 

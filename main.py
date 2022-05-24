@@ -60,6 +60,7 @@ def train_narti(config: ExperimentConfig):
         autoencoder_clust.fit(train_data_etc, train_data_etc, config.encoder_cluster_config.load_autoencoder_from)
     autoencoder = autoencoder_clust.ae
     centroid_pool = autoencoder_clust
+    reconstruction, assignments, latent = autoencoder_clust(X)
     plot_output(latent, assignments, paul15.obs['paul15_clusters'])
 
     seed_everything(2)
@@ -78,7 +79,6 @@ def train_narti(config: ExperimentConfig):
         lr=config.learning_rate
     )
 
-    reconstruction, assignments, latent = autoencoder_clust(X)
 
     for epoch in range(config.n_epochs):
         for batch_x in DataLoader(X, batch_size=config.batch_size):
