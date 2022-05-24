@@ -4,7 +4,8 @@ Neural algorithmic reasoning for pseudotime trajectory inference
 TODO:
 ----
 - [X] Save and load trained models
-- [ ] Find bug in training
+- [ ] Find bug in neural execution
+- [ ] Write tests for neural execution
 - [ ] Find alternative to cdist for calculating distance between pairs of points
 - [ ] Integrate synthetic datasets
 - [ ] Implement neuarlised KMeans 

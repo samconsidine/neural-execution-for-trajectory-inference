@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import torch
 from torch import Tensor
+from torch_geometric.data import Data
 from dataclasses import dataclass
 
 from typing import Optional
@@ -14,21 +15,21 @@ class Graph:
     Args:
         nodes (Tensor): coordinates of the graph nodes
         edge_index (Tensor): The 2 x e edge index of the graph
-        edge_weights (Tensor): The edge weights
+        edge_attr (Tensor): The edge weights
         probabilities (Optional[Tensor]): The probability of an edge existing
     """
 
     nodes: Tensor
     edge_index: Tensor
-    edge_weights: Tensor
+    edge_attr: Tensor
     probabilities: Optional[Tensor] = None
 
     @classmethod
     def fc_from_random_geometry(cls, n_nodes: int, n_dims: int) -> Graph:
         nodes = torch.rand(n_nodes, n_dims)
         edge_index = fc_edge_index(n_nodes)
-        edge_weights = (nodes[edge_index[0]] - nodes[edge_index[1]]).pow(2).sum(1).sqrt()
-        return cls(nodes=nodes, edge_index=edge_index, edge_weights=edge_weights)
+        edge_attr = (nodes[edge_index[0]] - nodes[edge_index[1]]).pow(2).sum(1).sqrt()
+        return cls(nodes=nodes, edge_index=edge_index, edge_attr=edge_attr)
 
     @property
     def num_nodes(self):
@@ -63,3 +64,23 @@ def pairwise_edge_distance(X: Tensor, edge_index: Tensor) -> Tensor:
     """
     # return (X[edge_index[0]] - X[edge_index[1]]).pow(2).sum(-1).sqrt()
     return torch.cdist(X, X).view(-1)
+
+
+def geom_to_fc_graph(X: Tensor) -> Data:
+    """Join all points in input into a fully connected graph with
+    edge weights equal to the euclidian distance between them.
+
+    Args:
+        X (Tensor): Points in space.
+
+    Returns:
+        Data: Graph data object, fully connected with distance weights.
+    """
+    edge_index = fc_edge_index(X.shape[0])
+    edge_attr = pairwise_edge_distance(X, edge_index)
+
+    return Data(
+        x=X,
+        edge_attr=edge_attr,
+        edge_index=edge_index
+    )

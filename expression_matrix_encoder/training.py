@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from config import EncoderClusterConfig
 from utils import combine_params
 from expression_matrix_encoder.models import AutoEncoder, CentroidPool
@@ -26,11 +27,10 @@ def train_autoencoder_clusterer(
     Returns:
         Tuple[AutoEncoder, CentroidPool]: The trained autoencoder and centroid pool.
     """
-    if config.load_autoencoder_from:
-        autoencoder = autoencoder.load_state_dict(torch.load(config.load_autoencoder_from))
-    if config.load_clustering_from:
-        pool = pool.load_state_dict(torch.load(config.load_clustering_from))
-    if config.load_autoencoder_from and config.load_clustering_from:
+    if config.load_model:
+        autoencoder.load_state_dict(torch.load(config.load_autoencoder_from))
+        pool.load_state_dict(torch.load(config.load_clustering_from))
+        print('print loaded both models from file, skipping autoencoder training')
         return autoencoder, pool
 
     recon_loss_fn = torch.nn.MSELoss()

@@ -21,6 +21,8 @@ def grad_of(module):
 
 
 def is_nonzero_grad(module):
+    if grad_of(module) == None:
+        return False
     return (torch.count_nonzero(grad_of(module)) > 0).item()
 
 
@@ -38,12 +40,16 @@ def ensure_gradients(gene_encoder, gene_decoder, pool, mst_encoder, processor,
 def print_gradients(*models):
     for model in models:
         print(type(model))
+        print(grad_of(model))
+
+def nan_gradient(*models):
+    for model in models:
+        print(type(model))
         nans = grad_of(model).isnan().any().item()
         print('Found nan gradients: ', nans)
         if nans:
             print("gradients...")
             print(grad_of(model))
-
 
 def test_gradient(item, model):
     item.sum().backward(retain_graph=True)

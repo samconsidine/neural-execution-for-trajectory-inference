@@ -2,13 +2,10 @@ from __future__ import annotations
 
 import torch
 from torch import Tensor
-from torch.nn import Module, Linear, ReLU, LeakyReLU, Sigmoid, Sequential, GRUCell
+from torch.nn import Module, Linear, ReLU, LeakyReLU, Sequential, GRUCell
 from torch_geometric.nn import MessagePassing
 
 from config import NeuralExecutionConfig
-from utils import fc_edge_index
-from utils.graphs import pairwise_edge_distance
-from utils.debugging import test_gradient
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -23,7 +20,6 @@ class PrimsSolver(Module):
         processor: ProcessorNetwork,
         mst_decoder: MSTDecoder,
         predecessor_decoder: PredecessorDecoder,
-        **kwargs
     ):
         super().__init__()
 
@@ -34,20 +30,22 @@ class PrimsSolver(Module):
         self.mst_decoder = mst_decoder
         self.predecessor_decoder = predecessor_decoder
 
-    def forward(self, X: Tensor) -> Tensor:
+    def forward(self, data) -> Tensor:
+        # <<<< Go through this with dobrik tomorrow <<<<
         h = torch.zeros((self.num_nodes, self.latent_dim))
-        prev_tree = torch.zeros(self.num_nodes, 1).long()
-        edge_index = fc_edge_index(self.num_nodes)
-        edge_weights = pairwise_edge_distance(X, edge_index)
+        # prev_tree = torch.zeros(self.num_nodes, 1).long()
+        prev_tree = data.x[:, 0].unsqueeze(-1)  # self.num_nodes -> self.num_nodes, 1
+        # edge_weights = pairwise_edge_distance(X, edge_index)
 
         for step in range(self.num_nodes - 1):
             encoded = self.encoder(prev_tree, h)
-            h = self.processor(x=encoded, edge_attr=edge_weights,
-                               edge_index=edge_index, hidden=h)
+            h = self.processor(x=encoded, edge_attr=data.edge_attr,
+                               edge_index=data.edge_index, hidden=h)
 
-            mst_logits = self.mst_decoder(encoded, h)
-            pred_logits = self.predecessor_decoder(encoded, h, edge_index)
-            prev_tree[mst_logits.argmax()] = 1
+            mst_logits = self.mst_decoder(encoded, h) # logits node in MST on next step
+            pred_logits = self.predecessor_decoder(encoded, h, data.edge_index)
+
+            prev_tree = (mst_logits > 0).long()
 
         # We're only interested in the final prediction
         return pred_logits
@@ -139,7 +137,6 @@ class MSTDecoder(Module):
 
         self.layers = Sequential(
             Linear(latent_dim * 2, 1),
-            Sigmoid()
         )
 
         self.to(device)
@@ -161,6 +158,8 @@ class PredecessorDecoder(Module):
         self.to(device)
 
     def forward(self, encoded: Tensor, h: Tensor, edge_index: Tensor) -> Tensor:
+        left_edge = edge_index[0]
+        right_edge = edge_index[1]
         left_encoded = encoded[edge_index[0]]
         right_encoded = encoded[edge_index[1]]
         left_h = h[edge_index[0]]
@@ -168,5 +167,9 @@ class PredecessorDecoder(Module):
 
         out = self.layers(torch.cat((left_encoded, left_h, right_encoded, right_h), axis=1))
 
-        out = out.reshape((-1, self.n_outputs))
-        return out
+        result = torch.full((h.shape[0], h.shape[0]), -1e9)
+        result[left_edge, right_edge] = out.squeeze(-1)
+
+        #out = out.reshape((-1, self.n_outputs))
+        # return out
+        return result

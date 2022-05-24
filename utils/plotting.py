@@ -31,7 +31,7 @@ def test_results(inputs, pool, labels, tree_logits, ae):
 
         sns.scatterplot(x=xs, y=ys, hue=labels.values, legend=False)
         sns.scatterplot(x=cx, y=cy, marker="*", zorder=10, color='black')
-        print(tree_logits)
+        print(xs)
         plot_mst(tree_logits, outs, coords, 1)
         # plt.savefig(f'plots/mst/{sys.argv[1]}/{epoch}.png')
         # plt.clf()

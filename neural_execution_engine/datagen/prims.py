@@ -4,6 +4,7 @@ from torch_geometric.data import Data
 from torch_geometric.utils import to_dense_adj
 from typing import Tuple, List
 from utils.graphs import Graph
+import random
 
 
 INF = torch.tensor(torch.inf, dtype=torch.float32)
@@ -12,18 +13,20 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def generate_prims_training_instance(graph: Graph) -> Tuple[Tensor, Tensor, Tensor]:
     visited = torch.zeros(graph.num_nodes, dtype=torch.bool)
-    visited[0] = True
+    random_idx = random.randint(0, graph.num_nodes - 1)
+    visited[random_idx] = True
     predecessor = torch.zeros(graph.num_nodes)
     predecessor.fill_(torch.nan)
-    predecessor[0] = 0.
+    predecessor[random_idx] = random_idx
 
     all_visited = []
     all_prev_visited = []
     all_predecessors = []
+
     for _ in range(graph.num_nodes-1):
         prev_visited = visited.clone()
 
-        next_node_flat_idx = mask_visited(graph.edge_index, graph.edge_weights, visited).argmin().item()
+        next_node_flat_idx = mask_visited(graph.edge_index, graph.edge_attr, visited).argmin().item()
         from_node_idx, to_node_idx = divmod(next_node_flat_idx, graph.num_nodes) 
         visited[to_node_idx] = True
         predecessor[to_node_idx] = from_node_idx
@@ -42,9 +45,9 @@ def rand_geometric_graphs_iterator(num_graphs: int, n_nodes: int, n_dims: int) -
         yield Graph.fc_from_random_geometry(n_nodes, n_dims)
 
 
-def mask_visited(edge_index: Tensor, edge_weights: Tensor, visited: Tensor) -> Tensor:
+def mask_visited(edge_index: Tensor, edge_attr: Tensor, visited: Tensor) -> Tensor:
     not_visited = torch.logical_not(visited)
-    dense_weights = to_dense_adj(edge_index, edge_attr=edge_weights)
+    dense_weights = to_dense_adj(edge_index, edge_attr=edge_attr)
     masked_weights = dense_weights * visited.unsqueeze(1) * not_visited
     return torch.where(masked_weights != 0, masked_weights, INF)
 
@@ -57,10 +60,11 @@ def gen_prims_data_instance(n_data: int, n_nodes: int, n_dims: int) -> Data:
         yield Data(
             x=x_prev.to(device), 
             y=x_next.to(device), 
-            edge_weights=graph.edge_weights.to(device),
+            edge_attr=graph.edge_attr.to(device),
             edge_index=graph.edge_index.to(device), 
             predecessor=predecessor.to(device),
-            graph_size=graph.num_nodes
+            graph_size=graph.num_nodes,
+            geom=graph.nodes
         )
 
 
