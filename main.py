@@ -17,7 +17,7 @@ from losses import cluster_loss_fn, mst_reconstruction_loss_fn
 from typing import Tuple
 
 from utils.graphs import Graph, fc_edge_index, pairwise_edge_distance, geom_to_fc_graph, sanity_check_neural_exec
-from utils.torch import combine_params, seed_everything
+from utils.torch import combine_params, freeze_model_weights, seed_everything
 from utils.debugging import ensure_gradients, test_gradient
 from utils.plotting import plot_clusters, plot_mst, test_results
 
@@ -48,7 +48,12 @@ def train_narti(config: ExperimentConfig):
     y = paul15.obs['paul15_clusters'].values
     label_encoder = LabelEncoder()
     target = torch.tensor(label_encoder.fit_transform(y)).to(device)
-    config.number_of_centroids = y.unique().shape[0]
+
+    # data = config.load_data_fn()
+    # X = data.X
+    # target = data.y
+
+    config.number_of_centroids = target.unique().shape[0]
 
     autoencoder, centroid_pool = train_clusterer(
         X=X,
@@ -59,6 +64,11 @@ def train_narti(config: ExperimentConfig):
     )
     latent, recon = autoencoder(X.to(device))
     clusters = centroid_pool(latent)
+    # import seaborn as sns
+    # import matplotlib.pyplot as plt
+    # v = latent.detach().numpy()
+    # a = v[:, 0]
+    # b = v[:, 1]
     # plot_clusters(latent, centroid_pool.coords, clusters.argmax(1), y)
 
     seed_everything(2)
@@ -78,8 +88,14 @@ def train_narti(config: ExperimentConfig):
     )
 
     train_dataset = DataLoader(list(zip(X.to(device), torch.tensor(target).to(device))), batch_size=config.batch_size)
+
     lowest_loss = 1000
+    freeze_model_weights(prims_solver)
+
     for epoch in range(config.n_epochs):
+        recon_loss_total = 0.
+        mst_loss_total = 0.
+        cluster_loss_total = 0.
         loss_total = 0
         for batch_x, batch_y in train_dataset:
             latent, reconstruction = autoencoder(batch_x)
@@ -105,6 +121,10 @@ def train_narti(config: ExperimentConfig):
                   + config.mst_loss_coef * mst_recon_loss
                   + config.cluster_loss_coef * cluster_loss)
 
+            recon_loss_total += config.mst_loss_coef * mst_recon_loss
+            mst_loss_total += config.mst_loss_coef * mst_recon_loss
+            cluster_loss_total += config.cluster_loss_coef * cluster_loss
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -116,8 +136,12 @@ def train_narti(config: ExperimentConfig):
                     pred_logits = prims_solver(data)
                     test_results(X.to(device), centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
 
-        epoch_loss = loss_total / len(train_dataset)
-        print(epoch_loss)
+        with torch.no_grad():
+            epoch_loss = loss_total / len(train_dataset)
+            recon_loss_total /= config.mst_loss_coef * mst_recon_loss
+            mst_loss_total /= config.mst_loss_coef * mst_recon_loss
+            cluster_loss_total /= config.cluster_loss_coef * cluster_loss
+            print(f'{epoch_loss=}, {recon_loss_total=}, {mst_loss_total=}, {cluster_loss_total=}')
 
         lowest_loss = min(epoch_loss, lowest_loss)
         if epoch_loss == lowest_loss:

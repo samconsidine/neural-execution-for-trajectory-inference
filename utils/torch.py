@@ -43,3 +43,9 @@ def cluster_acc(Y_pred, Y):
         w[Y_pred[i], Y[i]] += 1
     ind = linear_assignment(w.max() - w)
     return sum([w[i,j] for i,j in zip(*ind)])*1.0/Y_pred.size, w
+
+
+def freeze_model_weights(model):
+    for param in model.parameters():
+        param.requires_grad = False
+
