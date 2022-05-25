@@ -54,7 +54,7 @@ class PrimsSolver(Module):
     @classmethod
     def from_config(cls, config: NeuralExecutionConfig) -> PrimsSolver:
         n_nodes = config.n_nodes
-        latent_dim = config.latent_dim
+        latent_dim = config.emb_dim
         output_dim = config.batch_size * config.n_nodes
         node_features = config.node_features
         return cls(

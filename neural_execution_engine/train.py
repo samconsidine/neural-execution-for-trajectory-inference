@@ -61,7 +61,7 @@ def instantiate_prims_solver(
 
         # Train
         for data in train_loader:
-            h = torch.zeros((config.n_nodes, config.latent_dim), device=device)
+            h = torch.zeros((config.n_nodes, config.emb_dim), device=device)
 
             mst_loss = 0.
             pred_loss = 0.
@@ -70,7 +70,7 @@ def instantiate_prims_solver(
             for step in range(graph_size - 1):
                 prev_tree = data.x[:, step:(step+1)]
                 current_tree = data.y[:, step:(step+1)]
-                predecessors = data.predecessor[-1].long().to(device) 
+                predecessors = data.predecessor[-1].long()
                 mask = data.y[:, step].bool()
 
                 encoded = solver.encoder(prev_tree, h) 

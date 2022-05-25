@@ -76,11 +76,11 @@ def train_narti(config: ExperimentConfig):
 
     prims_dataset = generate_prims_dataset(config.neural_exec_config.n_data, 
                                            config.number_of_centroids,
-                                           config.neural_exec_config.latent_dim)
+                                           config.latent_dimension)
                                         
     val_dataset = generate_prims_dataset(config.neural_exec_config.n_data, 
                                          config.number_of_centroids,
-                                         config.neural_exec_config.latent_dim)
+                                         config.latent_dimension)
 
     prims_solver = instantiate_prims_solver(prims_dataset, val_dataset, config.neural_exec_config)
     optimizer = torch.optim.Adam(
