@@ -112,7 +112,7 @@ def train_narti(config: ExperimentConfig):
 
             mst_recon_loss = mst_reconstruction_loss_fn(latent, mst, batch_x, autoencoder)
             recon_loss = recon_loss_fn(reconstruction, batch_x)
-            
+
             cluster_loss = cluster_training_loss_fn(latent, batch_y, centroid_pool)
 
             # print(f"{mst_recon_loss=}, {recon_loss=}, {cluster_loss=}")
@@ -121,9 +121,9 @@ def train_narti(config: ExperimentConfig):
                   + config.mst_loss_coef * mst_recon_loss
                   + config.cluster_loss_coef * cluster_loss)
 
-            recon_loss_total += config.mst_loss_coef * mst_recon_loss
-            mst_loss_total += config.mst_loss_coef * mst_recon_loss
-            cluster_loss_total += config.cluster_loss_coef * cluster_loss
+            recon_loss_total += (config.recon_loss_coef * recon_loss).item()
+            mst_loss_total += (config.mst_loss_coef * mst_recon_loss).item()
+            cluster_loss_total += (config.cluster_loss_coef * cluster_loss).item()
 
             optimizer.zero_grad()
             loss.backward()
@@ -138,9 +138,9 @@ def train_narti(config: ExperimentConfig):
 
         with torch.no_grad():
             epoch_loss = loss_total / len(train_dataset)
-            recon_loss_total /= config.mst_loss_coef * mst_recon_loss
-            mst_loss_total /= config.mst_loss_coef * mst_recon_loss
-            cluster_loss_total /= config.cluster_loss_coef * cluster_loss
+            recon_loss_total /= len(train_dataset)
+            mst_loss_total /= len(train_dataset)
+            cluster_loss_total /= len(train_dataset)
             print(f'{epoch_loss=}, {recon_loss_total=}, {mst_loss_total=}, {cluster_loss_total=}')
 
         lowest_loss = min(epoch_loss, lowest_loss)

@@ -21,3 +21,4 @@ def mst_reconstruction_loss_fn(
     loss = reconstruction_loss * (mst.probabilities.view(-1).unsqueeze(0) * projection_probabilities) / reg.unsqueeze(-1)
 
     return loss.mean()
+
