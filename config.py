@@ -65,6 +65,9 @@ class ExperimentConfig:
     learning_rate:          float                  = 3e-4
     save_models:            bool                   = True
 
+    backbone_distance_coef: float                  = 0.1
+    
+
     data_config:            DataConfig             = DataConfig()
     encoder_cluster_config: EncoderClusterConfig   = EncoderClusterConfig()
     neural_exec_config:     NeuralExecutionConfig  = NeuralExecutionConfig()

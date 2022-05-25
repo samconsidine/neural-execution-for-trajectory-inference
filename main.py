@@ -10,6 +10,7 @@ from config import EncoderClusterConfig, ExperimentConfig, default_config
 from expression_matrix_encoder.models import AutoEncoder, CentroidPool, KMadness
 from expression_matrix_encoder.training import train_autoencoder_clusterer
 from losses.cluster_loss import cluster_training_loss_fn
+from losses.mst_reconstruction_loss import mst_reconstruction_loss_with_backbone
 from neural_execution_engine.datagen.prims import generate_prims_dataset
 from neural_execution_engine.train import instantiate_prims_solver
 from losses import cluster_loss_fn, mst_reconstruction_loss_fn
@@ -110,7 +111,7 @@ def train_narti(config: ExperimentConfig):
             mst = Graph(nodes=centroid_pool.coords, edge_index=edges, edge_attr=weights,
                         probabilities=predecessor_logits.softmax(1))
 
-            mst_recon_loss = mst_reconstruction_loss_fn(latent, mst, batch_x, autoencoder)
+            mst_recon_loss = mst_reconstruction_loss_with_backbone(latent, mst, batch_x, autoencoder, 1, config.backbone_distance_coef)
             recon_loss = recon_loss_fn(reconstruction, batch_x)
 
             cluster_loss = cluster_training_loss_fn(latent, batch_y, centroid_pool)
