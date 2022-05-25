@@ -1,7 +1,6 @@
 from torch import Tensor
 from torch.nn import Module
 from utils.graphs import Graph
-from utils.debugging import test_gradient
 
 from linalg.projections import project_onto_mst
 

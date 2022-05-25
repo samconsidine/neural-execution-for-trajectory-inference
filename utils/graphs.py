@@ -29,7 +29,6 @@ class Graph:
     def fc_from_random_geometry(cls, n_nodes: int, n_dims: int) -> Graph:
         nodes = torch.rand(n_nodes, n_dims)
         edge_index = fc_edge_index(n_nodes)
-        # edge_attr = (nodes[edge_index[0]] - nodes[edge_index[1]]).pow(2).sum(1).sqrt()
         edge_attr = pairwise_edge_distance(nodes, edge_index)
         return cls(nodes=nodes, edge_index=edge_index, edge_attr=edge_attr)
 

@@ -1,17 +1,32 @@
-# neural-reasoning-trajectory-inference
+# neural-execution-for-trajectory-inference
 Neural algorithmic reasoning for pseudotime trajectory inference
 
-TODO:
+Model:
 ----
-- [X] Save and load trained models
-- [X] Find bug in neural execution
+- [X] Autoencoder
+- [X] Neuralised clustering
+- [X] Experiment with IDEC models
+- [X] Neural execution engine for Prim's algo
+- [ ] Full MST Loss functions
+    - [X] Reconstruction loss
+    - [ ] Structure-preserving loss
+- [X] Solve MST loss bias
+- [X] Figure out regularisation balance
+- [X] Check gradients as they pass back through all components of the system
+- [X] Save and load trained models, different functionality for both
 - [X] Write tests for neural execution
-- [/] Find alternative to cdist for calculating distance between pairs of points
+- [X] Find alternative to cdist for calculating distance between pairs of points
+- [X] Make models GPU ready
+- [X] Figure out line segment projection of cells
+- [X] Figure out cross-dimensions for MST recon loss
+- [ ] Train models
 - [ ] Integrate synthetic datasets
-- [ ] Implement neuarlised KMeans 
+- [ ] Implement neuarlised KMeans in ACE style
 
-Bugs:
------
-- [X] MST solver is doing very little
-- [X] Centroids initialised between 0 and 0.5
-- [ ] Scale inputs to neural exec solver to be from same distribution as target data (to work accross AE training procedure and dataset)
+Benchmarking:
+------------
+- [ ] Benchmarking functionality. Compare to other models (or at least VITAE)
+- [ ] Plots demonstrating performance
+- [ ] Find issues with implementation
+- [ ] Case sutudies of strengths/weaknesses
+- [ ] Overall benchmarking study

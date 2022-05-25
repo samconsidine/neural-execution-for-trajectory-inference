@@ -32,11 +32,8 @@ class PrimsSolver(Module):
         self.to(device)
 
     def forward(self, data) -> Tensor:
-        # <<<< Go through this with dobrik tomorrow <<<<
         h = torch.zeros((self.num_nodes, self.latent_dim), device=device)
-        # prev_tree = torch.zeros(self.num_nodes, 1).long()
-        prev_tree = data.x[:, 0].unsqueeze(-1).to(device)  # self.num_nodes -> self.num_nodes, 1
-        # edge_weights = pairwise_edge_distance(X, edge_index)
+        prev_tree = data.x[:, 0].unsqueeze(-1)#.to(device)  # self.num_nodes -> self.num_nodes, 1
 
         for step in range(self.num_nodes - 1):
             encoded = self.encoder(prev_tree, h)
@@ -48,8 +45,7 @@ class PrimsSolver(Module):
 
             prev_tree = (mst_logits > 0).long()
 
-        # We're only interested in the final prediction
-        return pred_logits
+        return pred_logits # We're only interested in the final prediction
 
     @classmethod
     def from_config(cls, config: NeuralExecutionConfig) -> PrimsSolver:
