@@ -40,6 +40,7 @@ def mst_reconstruction_loss_with_backbone(
     reconstruction_loss = ((X.unsqueeze(1) - reconstructions).pow(2)).sum(-1).sqrt()
     reg = (mst.probabilities.view(-1).unsqueeze(0) * projection_probabilities).sum(1)
     mst_loss = reconstruction_loss * (mst.probabilities.view(-1).unsqueeze(0) * projection_probabilities) / reg.unsqueeze(-1)
-    distance_loss = projection_distances.min(1) / projection_distances.sum(1)
+    ## The dims here are really suspicious
+    distance_loss = projection_distances.min(1).values / projection_distances.mean(1)
 
-    return mst_reconstruction_coef * mst_loss + backbone_distance_coef * distance_loss
+    return mst_reconstruction_coef * mst_loss.mean() + backbone_distance_coef * distance_loss.mean()
