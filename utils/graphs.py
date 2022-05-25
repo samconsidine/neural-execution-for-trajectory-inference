@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 from typing import Optional
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 @dataclass
 class Graph:
@@ -28,7 +29,7 @@ class Graph:
     def fc_from_random_geometry(cls, n_nodes: int, n_dims: int) -> Graph:
         nodes = torch.rand(n_nodes, n_dims)
         edge_index = fc_edge_index(n_nodes)
-        edge_attr = (nodes[edge_index[0]] - nodes[edge_index[1]]).pow(2).sum(1).sqrt()
+        edge_attr = pairwise_edge_distance(nodes, edge_index)
         return cls(nodes=nodes, edge_index=edge_index, edge_attr=edge_attr)
 
     @property
@@ -84,3 +85,34 @@ def geom_to_fc_graph(X: Tensor) -> Data:
         edge_attr=edge_attr,
         edge_index=edge_index
     )
+
+def sanity_check_neural_exec(prims_solver, prims_dataset, centroid_pool):
+    """check edge index and edge attr if fails
+    """
+    new_centroid_pool = CentroidPool(centroid_pool.n_clusts, centroid_pool.n_dims)
+    new_centroid_pool.coords = torch.nn.Parameter(prims_dataset[0].geom)
+
+    orig = prims_dataset[0]
+    dataset = geom_to_fc_graph(prims_dataset[0].geom)
+    centroids = geom_to_fc_graph(new_centroid_pool.coords)
+
+    orig_output  = prims_solver(orig)
+    dataset_output = prims_solver(dataset)
+    centroids_output = prims_solver(centroids)
+    print(f'{torch.allclose(orig_output, dataset_output)=}')
+    print(f'{torch.allclose(centroids_output, dataset_output)=}')
+    print(f'{torch.allclose(centroids_output, orig_output)=}')
+
+    return torch.allclose(orig_output, dataset_output) and torch.allclose(centroids_output, dataset_output)
+
+
+class CentroidPool(torch.nn.Module):
+    def __init__(self, n_clusts, n_dims):
+        super().__init__()
+        self.n_clusts = n_clusts
+        self.n_dims = n_dims
+        self.coords = torch.nn.Parameter(torch.rand(n_clusts, n_dims, requires_grad=True))
+        self.to(device)
+
+    def forward(self, X):
+        return torch.cdist(X, self.coords)

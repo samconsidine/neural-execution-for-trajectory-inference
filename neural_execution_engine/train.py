@@ -2,12 +2,14 @@ import torch
 from torch import Tensor
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from yaml import warnings
 from config import NeuralExecutionConfig
 
 from neural_execution_engine.models import PrimsSolver
 
 
-device = 'cpu'
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 def batch_mst_acc(preds, real):
     with torch.no_grad():
@@ -33,8 +35,13 @@ def instantiate_prims_solver(
 
     solver = PrimsSolver.from_config(config)
 
+    if (not config.load_model) and (not config.train_model):
+        warnings.warn('NOT LOADING OR TRAINING NEURALISED CLUSTERING MODEL, CHECK PARAMETERS ARE CORRECT')
+
     if config.load_model:
-        solver.load_state_dict(torch.load(config.load_from))
+        solver.load_state_dict(torch.load(config.load_from, map_location=device))
+        
+    if not config.train_model:
         return solver
 
     mst_loss_fn = torch.nn.BCEWithLogitsLoss()
@@ -46,6 +53,7 @@ def instantiate_prims_solver(
     graph_size = config.n_nodes
     len_loader = len(list(train_loader))
 
+    best_accuracy = 0
     for epoch in tqdm(range(config.n_epochs)):
         batch_ctr = 0.
         acc_avg = 0.
@@ -53,7 +61,7 @@ def instantiate_prims_solver(
 
         # Train
         for data in train_loader:
-            h = torch.zeros((config.n_nodes, config.latent_dim), device=device)
+            h = torch.zeros((config.n_nodes, config.emb_dim), device=device)
 
             mst_loss = 0.
             pred_loss = 0.
@@ -62,7 +70,7 @@ def instantiate_prims_solver(
             for step in range(graph_size - 1):
                 prev_tree = data.x[:, step:(step+1)]
                 current_tree = data.y[:, step:(step+1)]
-                predecessors = data.predecessor[-1].long().to(device) 
+                predecessors = data.predecessor[-1].long()
                 mask = data.y[:, step].bool()
 
                 encoded = solver.encoder(prev_tree, h) 
@@ -93,8 +101,12 @@ def instantiate_prims_solver(
         print('average inmst acc', acc_avg/len_loader)
         print(f'test predecessor accuracy {accuracy}')
 
-    if config.save_to:
-        torch.save(solver.state_dict(), config.save_to)
+        if config.save_to:
+            if accuracy > best_accuracy:
+                torch.save(solver.state_dict(), config.save_to)
+                print(f'{accuracy} > {best_accuracy}. Saving model.')
+                best_accuracy = accuracy
+
 
     return solver
 

@@ -11,20 +11,23 @@ from typing import Optional
 from sklearn.cluster import KMeans
 from expression_matrix_encoder.models import StackedAE 
 
-device = 'cpu'
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class NeuralisedClustering(Module):
     def __init__(self):
         super().__init__()
 
-
 class CentroidPool(NeuralisedClustering):
     def __init__(self, n_clusts, n_dims):
         super().__init__()
+        self.n_clusts = n_clusts
+        self.n_dims = n_dims
         self.coords = Parameter(torch.rand(n_clusts, n_dims, requires_grad=True))
         self.to(device)
 
+    def forward(self, X):
+        return torch.cdist(X, self.coords)
 
 class KMadness(NeuralisedClustering):
     def __init__(self, n_clusts, n_dims):
@@ -90,7 +93,6 @@ class IDEC(nn.Module):
         self.coords = nn.Parameter(initial_cluster_centers)
 
     def pretrain(self, train_loader, path, lr=0.001, num_epochs=50, cuda=False):
-
         self.ae.apply(init_weights)
         if self.binary == True:
             criterion = "cross-entropy"

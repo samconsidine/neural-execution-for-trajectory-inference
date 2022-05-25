@@ -36,3 +36,23 @@ def test_results(inputs, pool, labels, tree_logits, ae):
         # plt.savefig(f'plots/mst/{sys.argv[1]}/{epoch}.png')
         # plt.clf()
         plt.show()
+
+
+def plot_clusters(latent, centers, assignments, labels):
+    with torch.no_grad():
+        if latent.shape[1] > 2:
+            pca = PCA(2)
+            latent = pca.fit_transform(latent)
+            centers = pca.transform(centers)
+        xs = latent[:, 0]
+        ys = latent[:, 1]
+        cx = centers[:, 0]
+        cy = centers[:, 1]
+
+        sns.scatterplot(x=xs, y=ys, hue=assignments, legend=False)
+        sns.scatterplot(x=cx, y=cy, marker="*", zorder=10, color='black')
+        plt.show()
+
+        sns.scatterplot(x=xs, y=ys, hue=labels, legend=False)
+        sns.scatterplot(x=cx, y=cy, marker="*", zorder=10, color='black')
+        plt.show()

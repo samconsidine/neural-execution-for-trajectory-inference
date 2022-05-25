@@ -53,6 +53,4 @@ def project_onto_mst(
     distances = vector_norm(latent.unsqueeze(1).broadcast_to(projection_coords.shape) - 
                             projection_coords, dim=-1)
 
-    projection_probabilities = distances.softmax(1)
-
-    return projection_probabilities, projection_coords
+    return distances, projection_coords
