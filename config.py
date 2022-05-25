@@ -8,8 +8,8 @@ from dataprocessing.synthetic import load_data_from_file
 
 
 # SHARED PARAMETERS
-EXPERIMENT_NAME = "EndToEndTest"
-LATENT_DIM = 32
+EXPERIMENT_NAME = "Model2D"
+LATENT_DIM = 2
 NUM_NODES = 10
 
 
@@ -27,9 +27,9 @@ class EncoderClusterConfig:
     clust_loss_coef:        float                  = 10.
     recon_loss_coef:        float                  = 1.
 
-    load_model:             bool                   = True
-    load_autoencoder_from:  Optional[str]          = f'./saved_models/Model1_autoencoder_{LATENT_DIM}d.pt'
-    load_clustering_from:   Optional[str]          = f'./saved_models/Model1_clustering_{LATENT_DIM}d.pt'
+    load_model:             bool                   = False
+    load_autoencoder_from:  Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_autoencoder_{LATENT_DIM}d.pt'
+    load_clustering_from:   Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_clustering_{LATENT_DIM}d.pt'
     save_autoencoder_to:    Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_autoencoder_{LATENT_DIM}d.pt'
     save_clustering_to:     Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_clustering_{LATENT_DIM}d.pt'
 
@@ -46,9 +46,9 @@ class NeuralExecutionConfig:
     batch_size:             int                    = 1
     learning_rate:          float                  = 3e-4
     
-    load_model:             bool                   = True
-    train_model:            bool                   = False
-    load_from:              Optional[str]          = f'./saved_models/Model1_neural_exec_{LATENT_DIM}d.pt'
+    load_model:             bool                   = False
+    train_model:            bool                   = True
+    load_from:              Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_neural_exec_{LATENT_DIM}d.pt'
     save_to:                Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_neural_exec_{LATENT_DIM}d.pt'
 
 
@@ -63,7 +63,7 @@ class ExperimentConfig:
     mst_loss_coef:          float                  = 5.
     cluster_loss_coef:      float                  = 0.2
     learning_rate:          float                  = 3e-4
-    save_models:            bool                   = True
+    save_models:            bool                   = False
 
     backbone_distance_coef: float                  = 0.1
     
