@@ -159,11 +159,8 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == 'test':
         print('testing mode')
-        default_config.save_models = False
-        default_config.encoder_cluster_config.load_model = True
-        default_config.neural_exec_config.load_model = True
-        default_config.neural_exec_config.train_model = False
-        default_config.plotting = True
+
+        default_config.test_mode()
 
     else:
         raise ArgumentError("Please define a arg")
