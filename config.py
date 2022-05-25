@@ -59,9 +59,9 @@ class ExperimentConfig:
     n_centroids:            int                    = NUM_NODES
     n_epochs:               int                    = 100
     batch_size:             int                    = 128
-    recon_loss_coef:        float                  = 0.
+    recon_loss_coef:        float                  = 0.2
     mst_loss_coef:          float                  = 5.
-    cluster_loss_coef:      float                  = 0.
+    cluster_loss_coef:      float                  = 0.2
     learning_rate:          float                  = 3e-4
     save_models:            bool                   = True
 
