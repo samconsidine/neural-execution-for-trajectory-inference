@@ -27,9 +27,9 @@ class EncoderClusterConfig:
     clust_loss_coef:        float                  = 4.
     recon_loss_coef:        float                  = 1.
 
-    load_model:             bool                   = False
-    load_autoencoder_from:  Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_autoencoder_{LATENT_DIM}d.pt'
-    load_clustering_from:   Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_clustering_{LATENT_DIM}d.pt'
+    load_model:             bool                   = True
+    load_autoencoder_from:  Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_autoencoder_{LATENT_DIM}d-test.pt'
+    load_clustering_from:   Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_clustering_{LATENT_DIM}d-test.pt'
     save_autoencoder_to:    Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_autoencoder_{LATENT_DIM}d-test.pt'
     save_clustering_to:     Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_clustering_{LATENT_DIM}d-test.pt'
 
@@ -64,7 +64,8 @@ class ExperimentConfig:
     mst_loss_coef:          float                  = 5.
     cluster_loss_coef:      float                  = 0.2
     learning_rate:          float                  = 3e-4
-    save_models:            bool                   = True
+    save_models:            bool                   = False
+    plotting:               bool                   = False
 
     backbone_distance_coef: float                  = 0.1
     

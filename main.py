@@ -1,3 +1,4 @@
+from argparse import ArgumentError
 import sys
 from sklearn.preprocessing import LabelEncoder
 import torch
@@ -131,7 +132,7 @@ def train_narti(config: ExperimentConfig):
             optimizer.step()
 
             loss_total += loss.item()
-            if len(sys.argv) > 1 and sys.argv[1] == 'plot':
+            if config.plotting:
                 with torch.no_grad():
                     latent, _ = autoencoder(X.to(device))
                     pred_logits = prims_solver(data)
@@ -153,4 +154,18 @@ def train_narti(config: ExperimentConfig):
 
 
 if __name__ == "__main__":
+    if sys.argv[1] == 'train':
+        print("training mode")
+
+    elif sys.argv[1] == 'test':
+        print('testing mode')
+        default_config.save_models = False
+        default_config.encoder_cluster_config.load_model = True
+        default_config.neural_exec_config.load_model = True
+        default_config.neural_exec_config.train_model = False
+        default_config.plotting = True
+
+    else:
+        raise ArgumentError("Please define a arg")
+
     train_narti(default_config)
