@@ -22,7 +22,7 @@ class DataConfig:
 @dataclass
 class EncoderClusterConfig:
     name:                   str                    = EXPERIMENT_NAME
-    n_epochs:               int                    = 0
+    n_epochs:               int                    = 150
     learning_rate:          float                  = 1e-4
     clust_loss_coef:        float                  = 2.
     recon_loss_coef:        float                  = 1.

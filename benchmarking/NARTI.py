@@ -26,6 +26,9 @@ from utils.metrics import topology, get_GRI
 from linalg.projections import project_onto_mst
 
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
 class NARTI(Module):
     def __init__(self, config: ExperimentConfig, data_dim: int):
         super().__init__()
@@ -33,7 +36,7 @@ class NARTI(Module):
         self.autoencoder = AutoEncoder(data_dim, config.latent_dimension)
         self.cluster_network = CentroidPool(config.number_of_centroids, config.latent_dimension)
         self.processor_network = PrimsSolver.from_config(config.neural_exec_config)
-        self.mu = self.cluster_network.coords.T  # Does this return a pointer? I hope so
+        self.mu = self.cluster_network.coords.T.clone().detach().cpu()  # Does this return a pointer? I hope so
 
         if config.neural_exec_config.load_model:
             self.processor_network.load_state_dict(torch.load(config.neural_exec_config.load_from))
@@ -143,10 +146,13 @@ class NARTI(Module):
                 method: str = 'mean', path: Optional[str] = None):
         ''' Evaluate the model.
         TODO:
-        - [ ] Figure out meaning of `begin_node`
-        - [ ] Find out meaning of all `self`'s
-        - [ ] Make sure we are training on every eval dataset
-        - [ ] Construct nx graph from trajectory backbone
+        - [X] Figure out meaning of `begin_node`
+        - [X] Find out meaning of all `self`'s
+        - [X] Make sure we are training on every eval dataset
+        - [X] Construct nx graph from trajectory backbone
+        - [ ] Figure out what the `w` here is. Currently I have it as the projected coordinates, but
+              I think it may actually be the amount along each edge (i.e. my `t`)
+        - [ ] Figure out definitively what `mu` is supposed to be
 
         Parameters
         ----------
@@ -284,15 +290,15 @@ class NARTI(Module):
     def train(self):
         self.autoencoder, self.centroid_pool, self.processor_network = train_narti(
             self.config, torch.tensor(self.X_normalized), torch.tensor(self.labels))
-        self.z = self.autoencoder.encoder(torch.tensor(self.X_normalized))
+        self.z = self.autoencoder.encoder(torch.tensor(self.X_normalized, device=device)).cpu()
 
     def infer_trajectory(self, root):
-        x = self.cluster_network.coords.detach().clone()
+        x = self.cluster_network.coords.detach().clone().cpu()
         fc_edges = fc_edge_index(self.config.number_of_centroids)
         modelin = torch.zeros((self.config.number_of_centroids, self.config.number_of_centroids-1))
         modelin[root, 0] = 1
         data = Data(x=modelin, edge_attr=pairwise_edge_distance(x, fc_edges), edge_index=fc_edges, num_nodes=self.config.number_of_centroids)
-        edge_probabilities = self.processor_network(data)
+        edge_probabilities = self.processor_network(data.to(device)).cpu()
         edges = torch.stack([edge_probabilities.argmax(1), torch.arange(edge_probabilities.shape[0])])
 
         mst = Graph(edge_index=edges, nodes=x, edge_attr=pairwise_edge_distance(x, edges))
@@ -526,7 +532,6 @@ def feature_select(x, gene_num = 2000):
     fitted = loess_model.outputs.fitted_values
 
     # standardized feature
-    breakpoint()
     z = (x - mean)/np.sqrt(10**fitted)
 
     # clipped the standardized features to remove outliers

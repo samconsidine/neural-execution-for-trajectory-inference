@@ -17,18 +17,22 @@ from dataprocessing.dataset import RNASeqDataset
 from numba import jit, float32
 from numpy import int32
 
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
 type_dict = {
     # dyno
     'dentate':'UMI', 
     'immune':'UMI', 
-    'neonatal':'UMI', 
+    #'neonatal':'UMI', 
     'planaria_muscle':'UMI',
     'planaria_full':'UMI',
     'aging':'non-UMI', 
     'cell_cycle':'non-UMI',
     'fibroblast':'non-UMI', 
     'germline':'non-UMI',    
-    'human':'non-UMI', 
+    'human_embryos':'non-UMI', 
     'mesoderm':'non-UMI',
     
     # dyngen
@@ -54,14 +58,14 @@ type_dict = {
 source_dict = {
     'dentate':'dyno', 
     'immune':'dyno', 
-    'neonatal':'dyno', 
+    # 'neonatal':'dyno', 
     'planaria_muscle':'dyno',
     'planaria_full':'dyno',
     'aging':'dyno', 
     'cell_cycle':'dyno',
     'fibroblast':'dyno', 
     'germline':'dyno',    
-    'human':'dyno', 
+    'human_embryos':'dyno', 
     'mesoderm':'dyno',
     
     'bifurcating_2':'dyngen',
@@ -162,7 +166,7 @@ for file_name in type_dict.keys():
     data = load_data('data/',file_name)
     NUM_CLUSTER = len(np.unique(data['grouping']))
     config.number_of_centroids = NUM_CLUSTER
-    model = NARTI(config, 2000)
+    model = NARTI(config, min(data['count'].shape[1], 2000))
     model.get_data(
         data['count'].copy(), 
         labels = data['grouping'].copy(), 
@@ -175,7 +179,7 @@ for file_name in type_dict.keys():
     # dim_latent = 8
     for n in range(num_simulation):
         with torch.no_grad():
-            z = model.autoencoder.encoder(torch.tensor(model.X_normalized))
+            z = model.autoencoder.encoder(torch.tensor(model.X_normalized, device=device)).cpu()
         labels = data['grouping'].copy()
         # mu = np.zeros((z.shape[1],NUM_CLUSTER))
         # breakpoint()
@@ -219,4 +223,4 @@ for file_name in type_dict.keys():
                 df = df.append(_df,ignore_index=True)
 
 df = df.groupby('method').mean().sort_values(['data','method']).reset_index(drop=True)
-df.to_csv('result/result_VITAE_%s.csv'%(file_name))
+df.to_csv('result/result_NARTI_%s.csv'%(file_name))
