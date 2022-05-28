@@ -26,7 +26,14 @@ Model:
 Benchmarking:
 ------------
 - [ ] Benchmarking functionality. Compare to other models (or at least VITAE)
+- [ ] Neeed benchmarking suite that can make some table of performances of models
 - [ ] Plots demonstrating performance
 - [ ] Find issues with implementation
 - [ ] Case sutudies of strengths/weaknesses
 - [ ] Overall benchmarking study
+
+Benchmarking outputs
+-------------------
+- [ ] Table of results, my model vs others 
+- [ ] Plot examples of model working
+- [ ] ...
