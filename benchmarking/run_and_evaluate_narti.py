@@ -150,7 +150,7 @@ def load_data(path, file_name):
     if data['type']=='non-UMI':
         scale_factor = np.sum(data['count'],axis=1, keepdims=True)/1e6
         data['count'] = data['count']/scale_factor
-    
+
     return data  
 
 def process_for_narti(data):
@@ -221,6 +221,23 @@ for file_name in type_dict.keys():
                 _df['data'] = file_name
                 _df['source'] = source_dict[file_name]
                 df = df.append(_df,ignore_index=True)
+                print(df)
 
-df = df.groupby('method').mean().sort_values(['data','method']).reset_index(drop=True)
-df.to_csv('result/result_NARTI_%s.csv'%(file_name))
+# breakpoint()
+#df = df.groupby('method').mean().sort_values(['data','method']).reset_index(drop=True)
+try:
+    df.to_csv('benchmarking/result/result_NARTI_%s.csv'%(file_name))
+    (df.groupby(['data', 'method']).agg(
+        {'ISO score': np.mean, 
+        'GED score': np.mean, 
+        'IM score': np.mean, 
+        'ARI': np.mean, 
+        'GRI': np.mean, 
+        'PDT score': np.mean, 
+        'type': 'first', 
+        'source': 'first'}
+    ).reset_index(drop=False)
+     .to_csv('benchmarking/result/result_NARTI_tree.csv'))
+
+except Exception:
+    breakpoint()

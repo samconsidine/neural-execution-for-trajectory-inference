@@ -3,20 +3,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-dat_NB = pd.read_csv('result/result_VITAE_NB.csv',
+dat_NB = pd.read_csv('benchmarking/result/result_NARTI_tree.csv',
                         index_col=0).drop(['type'], axis=1)
 dat_NB = dat_NB[dat_NB.method == 'modified_map']
-dat_NB.method = 'VITAE_NB'
+dat_NB.method = 'NARTI'
 
-dat_Gaussian = pd.read_csv('result/result_VITAE_Gaussian.csv',
-                       index_col=0).drop(['type'], axis=1)
-dat_Gaussian = dat_Gaussian[dat_Gaussian.method == 'modified_map']
-dat_Gaussian.method = 'VITAE_Gauss'
+# dat_Gaussian = pd.read_csv('result/result_VITAE_Gaussian.csv',
+#                        index_col=0).drop(['type'], axis=1)
+# dat_Gaussian = dat_Gaussian[dat_Gaussian.method == 'modified_map']
+# dat_Gaussian.method = 'VITAE_Gauss'
 
-dat_other = pd.read_csv('result/result_other_methods.csv',
+dat_other = pd.read_csv('benchmarking/result/result_other_methods.csv',
                         index_col=0).drop(['type'], axis=1)
 
-dat = pd.concat([dat_NB, dat_Gaussian, dat_other])
+dat = pd.concat([dat_NB, dat_other])
 
 sources = ['dyngen','our model','real']
 scores = ['GED score','IM score','ARI','GRI','PDT score']
@@ -55,4 +55,4 @@ for i in range(5):
         ax[j][i].set_xlabel(None)        
 plt.tight_layout()
 plt.subplots_adjust(wspace=0.2, hspace=0.1)
-fig.savefig('result/comp_heatmap.pdf', bbox_inches='tight')
+fig.savefig('benchmarking/result/comp_heatmap.pdf', bbox_inches='tight')
