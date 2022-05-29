@@ -18,8 +18,9 @@ dat_other = pd.read_csv('benchmarking/result/result_other_methods.csv',
                         index_col=0).drop(['type'], axis=1)
 
 dat = pd.concat([dat_NB, dat_other])
+dat.loc[dat['source'] == 'our model', 'source'] = 'Du et al.'
 
-sources = ['dyngen','our model','real']
+sources = ['dyngen','Du et al.','real']
 scores = ['GED score','IM score','ARI','GRI','PDT score']
 cmaps = ['YlOrRd_r', 'YlGn_r', 'RdPu_r', 'PuBu_r', 'BuGn_r']
 
