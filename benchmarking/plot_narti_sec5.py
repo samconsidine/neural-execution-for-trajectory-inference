@@ -7,6 +7,7 @@ dat_NB = pd.read_csv('benchmarking/result/result_NARTI_tree.csv',
                         index_col=0).drop(['type'], axis=1)
 dat_NB = dat_NB[dat_NB.method == 'modified_map']
 dat_NB.method = 'NARTI'
+dat_NB.loc[dat_NB['source'] == 'dyno', 'source'] = 'real'
 
 # dat_Gaussian = pd.read_csv('result/result_VITAE_Gaussian.csv',
 #                        index_col=0).drop(['type'], axis=1)
