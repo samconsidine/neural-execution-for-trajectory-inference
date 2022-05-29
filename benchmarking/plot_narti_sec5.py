@@ -19,7 +19,7 @@ dat_other = pd.read_csv('benchmarking/result/result_other_methods.csv',
 
 dat = pd.concat([dat_NB, dat_other])
 dat.loc[dat['source'] == 'our model', 'source'] = 'Du et al.'
-dat = dat.loc[dat['data'] != 'planaria_muscle']
+dat = dat.loc[dat['data'] != 'neonatal']
 
 sources = ['dyngen','Du et al.','real']
 scores = ['GED score','IM score','ARI','GRI','PDT score']
