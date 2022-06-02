@@ -25,7 +25,8 @@ sources = ['dyngen','Du et al.','real']
 scores = ['GED score','IM score','ARI','GRI','PDT score']
 cmaps = ['YlOrRd_r', 'YlGn_r', 'RdPu_r', 'PuBu_r', 'BuGn_r']
 
-sns.set(font_scale=1.5, rc={'axes.facecolor':(0.85,0.85,0.85), 'figure.facecolor':(0.85,0.85,0.85)})
+sns.set_style('whitegrid')
+sns.set(font_scale=1.5)#, rc={'axes.facecolor':(0.85,0.85,0.85), 'figure.facecolor':(0.85,0.85,0.85)})
 fig, ax = plt.subplots(3, 5, gridspec_kw={'height_ratios':[12, 4, 15], 'width_ratios' :[1,1,1,1,1]}, figsize = (20,16))
 for i in range(5):
     for j in range(3):
@@ -58,4 +59,4 @@ for i in range(5):
         ax[j][i].set_xlabel(None)        
 plt.tight_layout()
 plt.subplots_adjust(wspace=0.2, hspace=0.1)
-fig.savefig('benchmarking/result/comp_heatmap.pdf', bbox_inches='tight')
+fig.savefig('/home/sam/thesis/report/figures/ResultsHeatmap.png', bbox_inches='tight')
