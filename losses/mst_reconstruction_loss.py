@@ -13,7 +13,7 @@ def mst_reconstruction_loss_fn(
 ) -> float:
 
     projection_distances, projected_coords = project_onto_mst(latent, mst)
-    projection_probabilities = projection_distances.softmax(1)
+    projection_probabilities = (-projection_distances).softmax(1)
 
     reconstructions = autoencoder.decoder(projected_coords)
     reconstruction_loss = ((X.unsqueeze(1) - reconstructions).pow(2)).sum(-1).sqrt()
