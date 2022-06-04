@@ -2,7 +2,7 @@
 
 An end-to-end differentiable model for trajectory inference involving a neural minimum spanning tree solver.
 
-[Cell projection example](./media/plot_single_cell_projection.png)
+![Cell projection example](./media/plot_single_cell_projection.png)
 
 
 
