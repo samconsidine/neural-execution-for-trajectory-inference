@@ -159,14 +159,26 @@ def process_for_narti(data):
 df = pd.DataFrame()
 config = ExperimentConfig()
 
+if sys.argv[1] == 'load':
+    df = pd.read_csv('benchmarking/result/result_NARTI_tree.csv')
+    processed = df.data.unique().tolist()
+else:
+    processed = []
+
 for file_name in type_dict.keys():
+    if file_name in processed:
+        print('skipping', file_name)
+        continue
+    if file_name == 'planaria_full':
+        continue
     print(file_name)
     no_loop = False if 'cycle' in file_name else True
     is_init = True
     data = load_data('data/',file_name)
     NUM_CLUSTER = len(np.unique(data['grouping']))
     config.number_of_centroids = NUM_CLUSTER
-    config.fname = file_name
+    config.neural_exec_config.n_epochs = min(500, NUM_CLUSTER * 50)
+    print(config.neural_exec_config.n_epochs)
     model = NARTI(config, min(data['count'].shape[1], 2000))
     model.get_data(
         data['count'].copy(), 
@@ -224,21 +236,19 @@ for file_name in type_dict.keys():
                 df = df.append(_df,ignore_index=True)
                 print(df)
 
-# breakpoint()
-#df = df.groupby('method').mean().sort_values(['data','method']).reset_index(drop=True)
-try:
-    df.to_csv('benchmarking/result/result_NARTI_%s.csv'%(file_name))
-    (df.groupby(['data', 'method']).agg(
-        {'ISO score': np.mean, 
-        'GED score': np.mean, 
-        'IM score': np.mean, 
-        'ARI': np.mean, 
-        'GRI': np.mean, 
-        'PDT score': np.mean, 
-        'type': 'first', 
-        'source': 'first'}
-    ).reset_index(drop=False)
-     .to_csv('benchmarking/result/result_NARTI_tree.csv'))
+    try:
+        df.to_csv('benchmarking/result/result_full_NARTI_%s.csv'%(file_name))
+        (df.groupby(['data', 'method']).agg(
+            {'ISO score': np.mean, 
+            'GED score': np.mean, 
+            'IM score': np.mean, 
+            'ARI': np.mean, 
+            'GRI': np.mean, 
+            'PDT score': np.mean, 
+            'type': 'first', 
+            'source': 'first'}
+        ).reset_index(drop=False)
+         .to_csv('benchmarking/result/result_NARTI_tree.csv'))
 
-except Exception:
-    breakpoint()
+    except Exception:
+        breakpoint()

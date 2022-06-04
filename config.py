@@ -8,8 +8,8 @@ from dataprocessing.synthetic import load_data_from_file
 
 
 # SHARED PARAMETERS
-EXPERIMENT_NAME = "Model2D"
-LATENT_DIM = 2
+EXPERIMENT_NAME = "FullModel"
+LATENT_DIM = 32
 NUM_NODES = 10
 
 
@@ -39,17 +39,20 @@ class NeuralExecutionConfig:
     name:                   str                    = EXPERIMENT_NAME
     n_nodes:                int                    = NUM_NODES
     emb_dim:                int                    = 32
-    n_epochs:               int                    = 1000
+    n_epochs:               int                    = 200
     n_data:                 int                    = 1000
     processor_in_channels:  int                    = 16
     node_features:          int                    = 1
     batch_size:             int                    = 1
     learning_rate:          float                  = 3e-4
     
-    load_model:             bool                   = True
-    train_model:            bool                   = False
-    load_from:              Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_neural_exec_{LATENT_DIM}d-1k_epochs.pt'
-    save_to:                Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_neural_exec_{LATENT_DIM}d-1k_epochs.pt'
+    load_model:             bool                   = False
+    train_model:            bool                   = True
+    load_from:              Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_{NUM_NODES}_neural_exec_{LATENT_DIM}d-1k_epochs.pt'
+
+    @property
+    def save_to(self):
+        return f'./saved_models/{self.name}_{self.n_nodes}_neural_exec_{self.emb_dim}_{self.n_epochs}.pt'
 
 
 @dataclass
@@ -59,7 +62,7 @@ class ExperimentConfig:
     n_centroids:            int                    = NUM_NODES
     n_epochs:               int                    = 10
     batch_size:             int                    = 128
-    recon_loss_coef:        float                  = 1
+    recon_loss_coef:        float                  = 2.
     mst_loss_coef:          float                  = 5.
     cluster_loss_coef:      float                  = 5.
     learning_rate:          float                  = 3e-4
