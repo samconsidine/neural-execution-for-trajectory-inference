@@ -60,7 +60,7 @@ class ExperimentConfig:
     name:                   str                    = EXPERIMENT_NAME
     latent_dimension:       int                    = LATENT_DIM
     n_centroids:            int                    = NUM_NODES
-    n_epochs:               int                    = 10
+    n_epochs:               int                    = 0
     batch_size:             int                    = 128
     recon_loss_coef:        float                  = 2.
     mst_loss_coef:          float                  = 5.
