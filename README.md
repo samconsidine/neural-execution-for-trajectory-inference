@@ -2,6 +2,10 @@
 
 An end-to-end differentiable model for trajectory inference involving a neural minimum spanning tree solver.
 
+[Cell projection example](./media/plot_single_cell_projection.png)
+
+
+
 ## The structure of this program
 
 This project contains several submodules. These include
