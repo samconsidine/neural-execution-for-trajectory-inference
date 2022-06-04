@@ -99,22 +99,22 @@ def train_narti(config: ExperimentConfig, X: Tensor, y: Tensor):
     lowest_loss = 1000
     freeze_model_weights(prims_solver)
 
-    plot_latent(latent, y)
-    plot_centers(latent, centroid_pool.coords, y)
-    plot_latent_with_fc(latent, centroid_pool.coords, y)
+    if config.plotting:
+        plot_latent(latent, y)
+        plot_centers(latent, centroid_pool.coords, y)
+        plot_latent_with_fc(latent, centroid_pool.coords, y)
 
-    edges = fc_edge_index(config.number_of_centroids).to(device)
-    weights = pairwise_edge_distance(centroid_pool.coords, edges)
-    data = Data(x=centroid_pool.coords, edge_index=edges, edge_attr=weights)
-    mst_logits = prims_solver(data)
-    
-    plot_edge_probabilities(latent, centroid_pool.coords, y, mst_logits)
-    mst = Graph(nodes=centroid_pool.coords, edge_index=edges, edge_attr=weights,
-                            probabilities=mst_logits.softmax(1))
-    projection_distances, projected_coords = project_onto_mst(latent, mst)
-    plot_single_cell_projection(latent, centroid_pool.coords, y, mst_logits, (-8 * projection_distances).softmax(1), projected_coords)
-    plot_most_probable_mst(latent, centroid_pool.coords, y, mst_logits)
-    exit()
+        edges = fc_edge_index(config.number_of_centroids).to(device)
+        weights = pairwise_edge_distance(centroid_pool.coords, edges)
+        data = Data(x=centroid_pool.coords, edge_index=edges, edge_attr=weights)
+        mst_logits = prims_solver(data)
+        
+        plot_edge_probabilities(latent, centroid_pool.coords, y, mst_logits)
+        mst = Graph(nodes=centroid_pool.coords, edge_index=edges, edge_attr=weights,
+                                probabilities=mst_logits.softmax(1))
+        projection_distances, projected_coords = project_onto_mst(latent, mst)
+        plot_single_cell_projection(latent, centroid_pool.coords, y, mst_logits, (-8 * projection_distances).softmax(1), projected_coords)
+        plot_most_probable_mst(latent, centroid_pool.coords, y, mst_logits)
 
     edges = fc_edge_index(config.number_of_centroids).to(device)
     for epoch in range(config.n_epochs):
