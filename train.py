@@ -115,6 +115,7 @@ def train_narti(config: ExperimentConfig, X: Tensor, y: Tensor):
         projection_distances, projected_coords = project_onto_mst(latent, mst)
         plot_single_cell_projection(latent, centroid_pool.coords, y, mst_logits, (-8 * projection_distances).softmax(1), projected_coords)
         plot_most_probable_mst(latent, centroid_pool.coords, y, mst_logits)
+        exit()
 
     edges = fc_edge_index(config.number_of_centroids).to(device)
     for epoch in range(config.n_epochs):
