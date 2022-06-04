@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from yaml import warnings
 from config import NeuralExecutionConfig
+import os
 
 from neural_execution_engine.models import PrimsSolver
 
@@ -38,8 +39,12 @@ def instantiate_prims_solver(
     if (not config.load_model) and (not config.train_model):
         warnings.warn('NOT LOADING OR TRAINING NEURALISED CLUSTERING MODEL, CHECK PARAMETERS ARE CORRECT')
 
-    if config.load_model:
+    # if config.load_model:
+    #     solver.load_state_dict(torch.load(config.load_from, map_location=device))
+
+    if os.path.exists(config.save_to):
         solver.load_state_dict(torch.load(config.load_from, map_location=device))
+        return solver
         
     if not config.train_model:
         return solver
