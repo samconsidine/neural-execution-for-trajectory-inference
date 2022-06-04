@@ -22,9 +22,9 @@ class DataConfig:
 @dataclass
 class EncoderClusterConfig:
     name:                   str                    = EXPERIMENT_NAME
-    n_epochs:               int                    = 150
+    n_epochs:               int                    = 200
     learning_rate:          float                  = 1e-4
-    clust_loss_coef:        float                  = 2.
+    clust_loss_coef:        float                  = 3.5
     recon_loss_coef:        float                  = 1.
 
     load_model:             bool                   = False
@@ -57,16 +57,16 @@ class ExperimentConfig:
     name:                   str                    = EXPERIMENT_NAME
     latent_dimension:       int                    = LATENT_DIM
     n_centroids:            int                    = NUM_NODES
-    n_epochs:               int                    = 0
+    n_epochs:               int                    = 10
     batch_size:             int                    = 128
-    recon_loss_coef:        float                  = 0.2
+    recon_loss_coef:        float                  = 1
     mst_loss_coef:          float                  = 5.
-    cluster_loss_coef:      float                  = 0.8
+    cluster_loss_coef:      float                  = 5.
     learning_rate:          float                  = 3e-4
     save_models:            bool                   = False
     plotting:               bool                   = False
 
-    backbone_distance_coef: float                  = 100
+    backbone_distance_coef: float                  = 1
 
     data_config:            DataConfig             = DataConfig()
     encoder_cluster_config: EncoderClusterConfig   = EncoderClusterConfig()

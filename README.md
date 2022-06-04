@@ -19,21 +19,21 @@ Model:
 - [X] Make models GPU ready
 - [X] Figure out line segment projection of cells
 - [X] Figure out cross-dimensions for MST recon loss
-- [ ] Train models
-- [ ] Integrate synthetic datasets
-- [ ] Implement neuarlised KMeans in ACE style
+- [X] Train models
+- [X] Integrate synthetic datasets
+- [X] Implement neuarlised KMeans in ACE style
 
 Benchmarking:
 ------------
-- [ ] Benchmarking functionality. Compare to other models (or at least VITAE)
-- [ ] Neeed benchmarking suite that can make some table of performances of models
-- [ ] Plots demonstrating performance
-- [ ] Find issues with implementation
-- [ ] Case sutudies of strengths/weaknesses
-- [ ] Overall benchmarking study
+- [X] Benchmarking functionality. Compare to other models (or at least VITAE)
+- [X] Neeed benchmarking suite that can make some table of performances of models
+- [X] Plots demonstrating performance
+- [X] Find issues with implementation
+- [X] Case sutudies of strengths/weaknesses
+- [X] Overall benchmarking study
 
 Benchmarking outputs
 -------------------
-- [ ] Table of results, my model vs others 
-- [ ] Plot examples of model working
-- [ ] ...
+- [X] Table of results, my model vs others 
+- [X] Plot examples of model working
+- [X] ...

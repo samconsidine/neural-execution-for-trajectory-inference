@@ -137,10 +137,6 @@ class StackedAE(nn.Module):
             train_loss.append(epoch_loss)
             print("epoch {} loss={:.4f}".format(epoch, total_loss))
 
-#        path = '/home/john/Desktop/Dissertation/Dataset1/TrainingError/AE_loss_cor'
-#        with open(path, 'wb') as f:
-#            pickle.dump(train_loss, f)
-    
     def load_model(self, path):
         pretrained_dict = torch.load(path, map_location=lambda storage, loc: storage)
         model_dict = self.state_dict()

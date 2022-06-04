@@ -9,11 +9,12 @@ def mst_reconstruction_loss_fn(
     latent: Tensor,  # Output of encoder
     mst: Graph,   # Tensor of edge_index
     X: Tensor,
-    autoencoder: Module
+    autoencoder: Module,
+    temp: float = 8.
 ) -> float:
 
     projection_distances, projected_coords = project_onto_mst(latent, mst)
-    projection_probabilities = (-projection_distances).softmax(1)
+    projection_probabilities = (-temp * projection_distances).softmax(1)
 
     reconstructions = autoencoder.decoder(projected_coords)
     reconstruction_loss = ((X.unsqueeze(1) - reconstructions).pow(2)).sum(-1).sqrt()
@@ -29,11 +30,12 @@ def mst_reconstruction_loss_with_backbone(
     X: Tensor,
     autoencoder: Module,
     mst_reconstruction_coef: float,
-    backbone_distance_coef: float
+    backbone_distance_coef: float,
+    temp: float = 8.
 ) -> float:
 
     projection_distances, projected_coords = project_onto_mst(latent, mst)
-    projection_probabilities = projection_distances.softmax(1)
+    projection_probabilities = (-temp * projection_distances).softmax(1)
 
     reconstructions = autoencoder.decoder(projected_coords)
     reconstruction_loss = ((X.unsqueeze(1) - reconstructions).pow(2)).sum(-1).sqrt()

@@ -166,6 +166,7 @@ for file_name in type_dict.keys():
     data = load_data('data/',file_name)
     NUM_CLUSTER = len(np.unique(data['grouping']))
     config.number_of_centroids = NUM_CLUSTER
+    config.fname = file_name
     model = NARTI(config, min(data['count'].shape[1], 2000))
     model.get_data(
         data['count'].copy(), 

@@ -11,6 +11,7 @@ from config import EncoderClusterConfig, ExperimentConfig, NeuralExecutionConfig
 from dataprocessing.dataset import RNASeqDataset
 from expression_matrix_encoder.models import AutoEncoder, CentroidPool, KMadness
 from expression_matrix_encoder.training import train_autoencoder_clusterer
+from linalg.projections import project_onto_mst
 from losses.cluster_loss import cluster_training_loss_fn
 from losses.mst_reconstruction_loss import mst_reconstruction_loss_with_backbone
 from neural_execution_engine.datagen.prims import generate_prims_dataset
@@ -22,7 +23,7 @@ from typing import Tuple
 from utils.graphs import Graph, fc_edge_index, pairwise_edge_distance, geom_to_fc_graph, sanity_check_neural_exec
 from utils.torch import combine_params, freeze_model_weights, seed_everything
 from utils.debugging import ensure_gradients, test_gradient
-from utils.plotting import plot_clusters, plot_mst, test_results
+from utils.plotting import plot_centers, plot_clusters, plot_edge_probabilities, plot_latent, plot_latent_with_fc, plot_most_probable_mst, plot_mst, plot_single_cell_projection, test_results
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -51,8 +52,9 @@ def train_narti(config: ExperimentConfig, X: Tensor, y: Tensor):
         y = paul15.obs['paul15_clusters'].values
         label_encoder = LabelEncoder()
         target = torch.tensor(label_encoder.fit_transform(y)).to(device)
-
-    target = y
+        config.number_of_centroids = target.max().item() + 1
+    else:
+        target = y
 
     # data = config.load_data_fn()
     # X = data.X
@@ -97,6 +99,23 @@ def train_narti(config: ExperimentConfig, X: Tensor, y: Tensor):
     lowest_loss = 1000
     freeze_model_weights(prims_solver)
 
+    plot_latent(latent, y)
+    plot_centers(latent, centroid_pool.coords, y)
+    plot_latent_with_fc(latent, centroid_pool.coords, y)
+
+    edges = fc_edge_index(config.number_of_centroids).to(device)
+    weights = pairwise_edge_distance(centroid_pool.coords, edges)
+    data = Data(x=centroid_pool.coords, edge_index=edges, edge_attr=weights)
+    mst_logits = prims_solver(data)
+    
+    plot_edge_probabilities(latent, centroid_pool.coords, y, mst_logits)
+    mst = Graph(nodes=centroid_pool.coords, edge_index=edges, edge_attr=weights,
+                            probabilities=mst_logits.softmax(1))
+    projection_distances, projected_coords = project_onto_mst(latent, mst)
+    plot_single_cell_projection(latent, centroid_pool.coords, y, mst_logits, (-8 * projection_distances).softmax(1), projected_coords)
+    plot_most_probable_mst(latent, centroid_pool.coords, y, mst_logits)
+    exit()
+
     edges = fc_edge_index(config.number_of_centroids).to(device)
     for epoch in range(config.n_epochs):
         recon_loss_total = 0.
@@ -136,10 +155,12 @@ def train_narti(config: ExperimentConfig, X: Tensor, y: Tensor):
 
             loss_total += loss.item()
             if config.plotting:
-                with torch.no_grad():
-                    latent, _ = autoencoder(X.to(device))
-                    pred_logits = prims_solver(data)
-                    test_results(X.to(device), centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
+                if epoch % 5 == 0:
+                    with torch.no_grad():
+                        print('testing?')
+                        latent, _ = autoencoder(X.to(device))
+                        pred_logits = prims_solver(data)
+                        test_results(x.to(device), centroid_pool, paul15.obs['paul15_clusters'], pred_logits, autoencoder)
 
         with torch.no_grad():
             epoch_loss = loss_total / len(train_dataset)
@@ -172,4 +193,4 @@ if __name__ == "__main__":
     else:
         raise ArgumentError("Please define an arg")
 
-    train_narti(config)
+    train_narti(config, None, None)

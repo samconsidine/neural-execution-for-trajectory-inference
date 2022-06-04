@@ -183,9 +183,6 @@ class NARTI(Module):
         res : pd.DataFrame
             The evaluation result.
         '''
-        if grouping is not None:
-            return
-
         if not hasattr(self, 'le'):
             raise ValueError("No given labels for training.")
 
@@ -260,7 +257,6 @@ class NARTI(Module):
             if grouping is None:
                 pseudotime_true = milestone_net['from'].values + 1 - milestone_net['w'].values
                 pseudotime_true[np.isnan(pseudotime_true)] = milestone_net[pd.isna(milestone_net['w'])]['from'].values            
-                breakpoint()
             else:
                 pseudotime_true = - np.ones(len(grouping))
                 nx.set_edge_attributes(G_true, values = 1, name = 'weight')
@@ -277,6 +273,9 @@ class NARTI(Module):
         else:
             res['PDT score'] = np.nan
 
+        arr = np.concatenate([self.X, pseudotime_true.reshape((-1, 1)), pseudotime_pred.reshape((-1, 1))], axis=1)
+        df = pd.DataFrame(arr, columns=self.selected_gene_names.tolist()+['true_pseudotime', 'pred_pseuodtime'])
+        df.to_csv(f'pseudotime_datasets/{self.config.fname}.csv', index=False)
         # 4. Shape
         # score_cos_theta = 0
         # for (_from,_to) in G.edges:
