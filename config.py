@@ -8,7 +8,7 @@ from dataprocessing.synthetic import load_data_from_file
 
 
 # SHARED PARAMETERS
-EXPERIMENT_NAME = "FullModel"
+EXPERIMENT_NAME = "FullModelDBG"
 LATENT_DIM = 32
 NUM_NODES = 10
 
@@ -43,7 +43,7 @@ class NeuralExecutionConfig:
     n_data:                 int                    = 1000
     processor_in_channels:  int                    = 16
     node_features:          int                    = 1
-    batch_size:             int                    = 1
+    batch_size:             int                    = 32
     learning_rate:          float                  = 3e-4
     
     load_model:             bool                   = False
