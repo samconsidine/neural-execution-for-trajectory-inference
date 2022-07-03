@@ -51,15 +51,23 @@ def mask_visited(edge_index: Tensor, edge_attr: Tensor, visited: Tensor) -> Tens
     masked_weights = dense_weights * visited.unsqueeze(1) * not_visited
     return torch.where(masked_weights != 0, masked_weights, INF)
 
+class PrimData(Data):
+    def __inc__(self, key, value, *args, **kwargs):
+        if key == 'predecessor':
+            return self.num_nodes
+        return super().__inc__(key, value, *args, *kwargs)
 
 def gen_prims_data_instance(n_data: int, n_nodes: int, n_dims: int) -> Data:
     for graph in rand_geometric_graphs_iterator(n_data, n_nodes, n_dims):
         x_next, x_prev, predecessor  = generate_prims_training_instance(graph)
-        predecessor = predecessor.T  # For batching
+        # breakpoint()
+        # predecessor = predecessor.T  # For batching
 
-        yield Data(
+        yield PrimData(
             x=x_prev.to(device), 
             y=x_next.to(device), 
+            stackx=x_prev.unsqueeze(0).to(device),
+            stacky=x_next.unsqueeze(0).to(device),
             edge_attr=graph.edge_attr.to(device),
             edge_index=graph.edge_index.to(device), 
             predecessor=predecessor.to(device),

@@ -70,7 +70,7 @@ def test_results(inputs, pool, labels, tree_logits, ae):
         plt.clf()
         # plt.clf()
         plt.tight_layout()
-        plt.savefig(f'/home/sam/thesis/report/figures/{inspect.stack()[0][3]}.png')
+        plt.savefig(f'./figures/{inspect.stack()[0][3]}.png')
         plt.clf()
 
 def plot_latent_with_fc(latent, coords, labels):
@@ -89,14 +89,14 @@ def plot_latent_with_fc(latent, coords, labels):
         sns.scatterplot(x=cx, y=cy, marker="*", zorder=10, color='black', s=110)
         plot_fc(coords)
         plt.tight_layout()
-        plt.savefig(f'/home/sam/thesis/report/figures/{inspect.stack()[0][3]}.png')
+        plt.savefig(f'./figures/{inspect.stack()[0][3]}.png')
         plt.clf()
 
 def plot_edge_probabilities(latent, coords, labels, mst_logits):
     outs = latent.clone()
     with torch.no_grad():
         if outs.shape[1] > 2:
-            pca = pca(2)
+            pca = PCA(2)
             outs = pca.fit_transform(outs)
             coords = pca.transform(coords)
         xs = outs[:, 0]
@@ -108,7 +108,7 @@ def plot_edge_probabilities(latent, coords, labels, mst_logits):
         sns.scatterplot(x=cx, y=cy, marker="*", zorder=10, color='black', s=110)
         plot_probab_edges(coords, mst_logits)
         plt.tight_layout()
-        plt.savefig(f'/home/sam/thesis/report/figures/{inspect.stack()[0][3]}.png')
+        plt.savefig(f'./figures/{inspect.stack()[0][3]}.png')
         plt.clf()
 
     
@@ -116,7 +116,7 @@ def plot_most_probable_mst(latent, coords, labels, mst_logits):
     outs = latent.clone()
     with torch.no_grad():
         if outs.shape[1] > 2:
-            pca = pca(2)
+            pca = PCA(2)
             outs = pca.fit_transform(outs)
             coords = pca.transform(coords)
         xs = outs[:, 0]
@@ -128,7 +128,7 @@ def plot_most_probable_mst(latent, coords, labels, mst_logits):
         sns.scatterplot(x=cx, y=cy, marker="*", zorder=10, color='black', s=110)
         plot_mst(mst_logits, coords)
         plt.tight_layout()
-        plt.savefig(f'/home/sam/thesis/report/figures/{inspect.stack()[0][3]}.png')
+        plt.savefig(f'./figures/{inspect.stack()[0][3]}.png')
         plt.clf()
     
     
@@ -159,7 +159,7 @@ def plot_single_cell_projection(latent, coords, labels, mst_logits, projection_p
             plt.plot(x, y, 'bo-', alpha=combined_probabs_norm[i].item())
 
         plt.tight_layout()
-        plt.savefig(f'/home/sam/thesis/report/figures/{inspect.stack()[0][3]}.png')
+        plt.savefig(f'./figures/{inspect.stack()[0][3]}.png')
         plt.clf()
 
 def plot_centers(latent, centers, labels):
@@ -176,7 +176,7 @@ def plot_centers(latent, centers, labels):
         sns.scatterplot(x=xs, y=ys, hue=labels, legend=False, alpha=0.7)
         sns.scatterplot(x=cx, y=cy, marker="*", zorder=10, color='black', s=110)
         plt.tight_layout()
-        plt.savefig(f'/home/sam/thesis/report/figures/{inspect.stack()[0][3]}.png')
+        plt.savefig(f'./figures/{inspect.stack()[0][3]}.png')
         plt.clf()
 
 
@@ -191,7 +191,7 @@ def plot_latent(latent, labels):
 
         sns.scatterplot(x=xs, y=ys, hue=labels, legend=False, alpha=0.7)
         plt.tight_layout()
-        plt.savefig(f'/home/sam/thesis/report/figures/{inspect.stack()[0][3]}.png')
+        plt.savefig(f'./figures/{inspect.stack()[0][3]}.png')
         plt.clf()
 
 
@@ -209,13 +209,13 @@ def plot_clusters(latent, centers, assignments, labels):
         sns.scatterplot(x=xs, y=ys, hue=assignments, legend=False)
         sns.scatterplot(x=cx, y=cy, marker="*", zorder=10, color='black')
         plt.tight_layout()
-        plt.savefig(f'/home/sam/thesis/report/figures/{inspect.stack()[0][3]}.png')
+        plt.savefig(f'./figures/{inspect.stack()[0][3]}.png')
         plt.clf()
 
         sns.scatterplot(x=xs, y=ys, hue=labels, legend=False)
         sns.scatterplot(x=cx, y=cy, marker="*", zorder=10, color='black')
         plt.tight_layout()
-        plt.savefig(f'/home/sam/thesis/report/figures/{inspect.stack()[0][3]}.png')
+        plt.savefig(f'./figures/{inspect.stack()[0][3]}.png')
         plt.clf()
 
 

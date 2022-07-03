@@ -39,12 +39,11 @@ class NeuralExecutionConfig:
     name:                   str                    = EXPERIMENT_NAME
     n_nodes:                int                    = NUM_NODES
     emb_dim:                int                    = 32
-    n_epochs:               int                    = 200
+    n_epochs:               int                    = 100
     n_data:                 int                    = 1000
-    processor_in_channels:  int                    = 16
     node_features:          int                    = 1
     batch_size:             int                    = 32
-    learning_rate:          float                  = 3e-4
+    learning_rate:          float                  = 5e-4
     
     load_model:             bool                   = False
     train_model:            bool                   = True
@@ -60,14 +59,14 @@ class ExperimentConfig:
     name:                   str                    = EXPERIMENT_NAME
     latent_dimension:       int                    = LATENT_DIM
     n_centroids:            int                    = NUM_NODES
-    n_epochs:               int                    = 0
+    n_epochs:               int                    = 100
     batch_size:             int                    = 128
     recon_loss_coef:        float                  = 2.
     mst_loss_coef:          float                  = 5.
     cluster_loss_coef:      float                  = 5.
     learning_rate:          float                  = 3e-4
-    save_models:            bool                   = False
-    plotting:               bool                   = False
+    save_models:            bool                   = True
+    plotting:               bool                   = True
 
     backbone_distance_coef: float                  = 1
 
