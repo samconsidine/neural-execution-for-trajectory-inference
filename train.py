@@ -8,22 +8,19 @@ from torch_geometric.data import Data
 import scanpy as sc
 
 from config import EncoderClusterConfig, ExperimentConfig, NeuralExecutionConfig
-from dataprocessing.dataset import RNASeqDataset
-from expression_matrix_encoder.models import AutoEncoder, CentroidPool, KMadness
+from expression_matrix_encoder.models import AutoEncoder, CentroidPool
 from expression_matrix_encoder.training import train_autoencoder_clusterer
 from linalg.projections import project_onto_mst
 from losses.cluster_loss import cluster_training_loss_fn
 from losses.mst_reconstruction_loss import mst_reconstruction_loss_with_backbone
 from neural_execution_engine.datagen.prims import generate_prims_dataset
 from neural_execution_engine.train import instantiate_prims_solver
-from losses import cluster_loss_fn, mst_reconstruction_loss_fn
-
-from typing import Tuple
-
-from utils.graphs import Graph, fc_edge_index, pairwise_edge_distance, geom_to_fc_graph, sanity_check_neural_exec
+from utils.graphs import Graph, fc_edge_index, pairwise_edge_distance
 from utils.torch import combine_params, freeze_model_weights, seed_everything
 from utils.debugging import ensure_gradients, test_gradient
-from utils.plotting import plot_centers, plot_clusters, plot_edge_probabilities, plot_latent, plot_latent_with_fc, plot_most_probable_mst, plot_mst, plot_single_cell_projection, test_results
+from utils.plotting import plot_centers, plot_edge_probabilities, plot_latent, plot_latent_with_fc, plot_most_probable_mst, plot_mst, plot_single_cell_projection, test_results
+
+from typing import Tuple
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -56,12 +53,6 @@ def train_narti(config: ExperimentConfig, X: Tensor, y: Tensor):
     else:
         target = y
 
-    # data = config.load_data_fn()
-    # X = data.X
-    # target = data.y
-
-    # config.number_of_centroids = target.unique().shape[0]
-
     autoencoder, centroid_pool = train_clusterer(
         X=X,
         y=target,
@@ -71,12 +62,6 @@ def train_narti(config: ExperimentConfig, X: Tensor, y: Tensor):
     )
     latent, recon = autoencoder(X.to(device))
     clusters = centroid_pool(latent)
-    # import seaborn as sns
-    # import matplotlib.pyplot as plt
-    # v = latent.detach().numpy()
-    # a = v[:, 0]
-    # b = v[:, 1]
-    # plot_clusters(latent, centroid_pool.coords, clusters.argmax(1), y)
 
     seed_everything(2)
 

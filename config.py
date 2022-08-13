@@ -10,7 +10,7 @@ from dataprocessing.synthetic import load_data_from_file
 # SHARED PARAMETERS
 EXPERIMENT_NAME = "FullModel"
 LATENT_DIM = 32
-NUM_NODES = 10
+NUM_NODES = 19
 
 
 @dataclass
@@ -66,7 +66,7 @@ class ExperimentConfig:
     mst_loss_coef:          float                  = 5.
     cluster_loss_coef:      float                  = 5.
     learning_rate:          float                  = 3e-4
-    save_models:            bool                   = False
+    save_models:            bool                   = True
     plotting:               bool                   = False
 
     backbone_distance_coef: float                  = 1
