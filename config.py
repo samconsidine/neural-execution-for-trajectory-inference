@@ -8,9 +8,9 @@ from dataprocessing.synthetic import load_data_from_file
 
 
 # SHARED PARAMETERS
-EXPERIMENT_NAME = "FullModelDBG"
+EXPERIMENT_NAME = "DobrikExperiment"
 LATENT_DIM = 32
-NUM_NODES = 10
+NUM_NODES = 19
 
 
 @dataclass
@@ -30,8 +30,8 @@ class EncoderClusterConfig:
     load_model:             bool                   = False
     load_autoencoder_from:  Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_autoencoder_{LATENT_DIM}d.pt'
     load_clustering_from:   Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_clustering_{LATENT_DIM}d.pt'
-    save_autoencoder_to:    Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_autoencoder_{LATENT_DIM}d-throwaway.pt'
-    save_clustering_to:     Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_clustering_{LATENT_DIM}d-throwaway.pt'
+    save_autoencoder_to:    Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_autoencoder_{LATENT_DIM}d.pt'
+    save_clustering_to:     Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_clustering_{LATENT_DIM}d.pt'
 
 
 @dataclass
@@ -39,20 +39,20 @@ class NeuralExecutionConfig:
     name:                   str                    = EXPERIMENT_NAME
     n_nodes:                int                    = NUM_NODES
     emb_dim:                int                    = 32
-    n_epochs:               int                    = 200
+    n_epochs:               int                    = 400
     n_data:                 int                    = 1000
     processor_in_channels:  int                    = 16
     node_features:          int                    = 1
-    batch_size:             int                    = 32
+    batch_size:             int                    = 64
     learning_rate:          float                  = 3e-4
     
     load_model:             bool                   = False
     train_model:            bool                   = True
-    load_from:              Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_{NUM_NODES}_neural_exec_{LATENT_DIM}d-1k_epochs.pt'
+    load_from:              Optional[str]          = f'./saved_models/{EXPERIMENT_NAME}_{NUM_NODES}_neural_exec_{LATENT_DIM}.pt'
 
     @property
     def save_to(self):
-        return f'./saved_models/{self.name}_{self.n_nodes}_neural_exec_{self.emb_dim}_{self.n_epochs}.pt'
+        return f'./saved_models/{self.name}_{self.n_nodes}_neural_exec_{self.emb_dim}.pt'
 
 
 @dataclass
@@ -60,13 +60,13 @@ class ExperimentConfig:
     name:                   str                    = EXPERIMENT_NAME
     latent_dimension:       int                    = LATENT_DIM
     n_centroids:            int                    = NUM_NODES
-    n_epochs:               int                    = 0
+    n_epochs:               int                    = 200
     batch_size:             int                    = 128
     recon_loss_coef:        float                  = 2.
     mst_loss_coef:          float                  = 5.
     cluster_loss_coef:      float                  = 5.
     learning_rate:          float                  = 3e-4
-    save_models:            bool                   = False
+    save_models:            bool                   = True
     plotting:               bool                   = False
 
     backbone_distance_coef: float                  = 1

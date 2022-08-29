@@ -106,9 +106,12 @@ def train_narti(config: ExperimentConfig, X: Tensor, y: Tensor):
 
         edges = fc_edge_index(config.number_of_centroids).to(device)
         weights = pairwise_edge_distance(centroid_pool.coords, edges)
-        data = Data(x=centroid_pool.coords, edge_index=edges, edge_attr=weights)
+        x = torch.zeros(centroid_pool.coords.shape[0], 1, requires_grad=False).to(centroid_pool.coords)
+        x[0, 0] = 1
+        data = Data(x=x, edge_index=edges, edge_attr=weights)
+        data.num_graphs = 1
         mst_logits = prims_solver(data)
-        
+
         plot_edge_probabilities(latent, centroid_pool.coords, y, mst_logits)
         mst = Graph(nodes=centroid_pool.coords, edge_index=edges, edge_attr=weights,
                                 probabilities=mst_logits.softmax(1))
@@ -128,7 +131,10 @@ def train_narti(config: ExperimentConfig, X: Tensor, y: Tensor):
 
             weights = pairwise_edge_distance(centroid_pool.coords, edges)
 
-            data = Data(x=centroid_pool.coords, edge_index=edges, edge_attr=weights)
+            x = torch.zeros(centroid_pool.coords.shape[0], 1, requires_grad=False).to(centroid_pool.coords)
+            x[0, 0] = 1
+            data = Data(x=x, edge_index=edges, edge_attr=weights)
+            data.num_graphs = 1
             predecessor_logits = prims_solver(data)
             # if not sanity_check_neural_exec(prims_solver, prims_dataset, centroid_pool):
             #     breakpoint()

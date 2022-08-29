@@ -32,18 +32,27 @@ class PrimsSolver(Module):
         self.to(device)
 
     def forward(self, data) -> Tensor:
-        h = torch.zeros((self.num_nodes, self.latent_dim), device=device)
-        prev_tree = data.x[:, 0].unsqueeze(-1)#.to(device)  # self.num_nodes -> self.num_nodes, 1
+        h = torch.zeros((data.num_nodes, self.latent_dim), device=device)
+        prev_tree = data.x[:, 0]#.to(device)  # self.num_nodes -> self.num_nodes, 1
 
-        for step in range(self.num_nodes - 1):
-            encoded = self.encoder(prev_tree, h)
+        for step in range(data.x.shape[1]):
+            # prev_tree = data.x[:, step:(step+1)]
+            encoded = self.encoder(prev_tree.unsqueeze(-1), h)
             h = self.processor(x=encoded, edge_attr=data.edge_attr,
                                edge_index=data.edge_index, hidden=h)
 
             mst_logits = self.mst_decoder(encoded, h) # logits node in MST on next step
-            pred_logits = self.predecessor_decoder(encoded, h, data.edge_index)
+            pred_logits = self.predecessor_decoder(encoded, h, data.edge_index, data.edge_attr)
 
-            prev_tree = (mst_logits > 0).long()
+            new_tree = mst_logits.clone()
+            new_tree[prev_tree.bool()] = -1e9
+            new_tree = new_tree.view(data.num_graphs, -1)
+            # prev_tree = mst_logits.view(data.num_graphs, -1)
+            chosen_nodes = new_tree.argmax(-1)
+            prev_tree = prev_tree.view(data.num_graphs, -1)
+            prev_tree[torch.arange(chosen_nodes.shape[0]).to(chosen_nodes), chosen_nodes] = 1
+            prev_tree = prev_tree.view(-1)
+            # prev_tree = (mst_logits > 0).long()
 
         return pred_logits # We're only interested in the final prediction
 
@@ -57,7 +66,7 @@ class PrimsSolver(Module):
             num_nodes=n_nodes,
             latent_dim=latent_dim,
             encoder=Encoder(node_feature_dim=node_features, latent_dim=latent_dim),
-            processor=ProcessorNetwork(in_channels=latent_dim, out_channels=latent_dim),
+            processor=ProcessorNetwork(in_channels=latent_dim, out_channels=latent_dim, use_gru=True),
             mst_decoder=MSTDecoder(latent_dim=latent_dim),
             predecessor_decoder=PredecessorDecoder(latent_dim=latent_dim, n_outputs=output_dim)
         )
@@ -113,11 +122,11 @@ class ProcessorNetwork(MessagePassing):
 
 
 class Encoder(Module):
-    def __init__(self, node_feature_dim: int, latent_dim: int):
+    def __init__(self, node_feature_dim: int, latent_dim: int, bias=False):
         super().__init__()
 
         self.layers = Sequential(
-            Linear(node_feature_dim + latent_dim, latent_dim),
+            Linear(node_feature_dim + latent_dim, latent_dim, bias=bias),
             ReLU()
         )
 
@@ -129,11 +138,11 @@ class Encoder(Module):
 
 
 class MSTDecoder(Module):
-    def __init__(self, latent_dim: int):
+    def __init__(self, latent_dim: int, bias=False):
         super().__init__()
 
         self.layers = Sequential(
-            Linear(latent_dim * 2, 1),
+            Linear(latent_dim * 2, 1, bias=bias),
         )
 
         self.to(device)
@@ -144,17 +153,17 @@ class MSTDecoder(Module):
 
 
 class PredecessorDecoder(Module):
-    def __init__(self, latent_dim: int, n_outputs: int):
+    def __init__(self, latent_dim: int, n_outputs: int, bias=False):
         super().__init__()
         self.layers = Sequential(
-            Linear(latent_dim * 4, latent_dim),
+            Linear(latent_dim * 2 + 1, latent_dim, bias=bias),
             ReLU(),
-            Linear(latent_dim, 1)
+            Linear(latent_dim, 1, bias=bias)
         )
         self.n_outputs = n_outputs
         self.to(device)
 
-    def forward(self, encoded: Tensor, h: Tensor, edge_index: Tensor) -> Tensor:
+    def forward(self, encoded: Tensor, h: Tensor, edge_index: Tensor, edge_attr) -> Tensor:
         left_edge = edge_index[0]
         right_edge = edge_index[1]
         left_encoded = encoded[edge_index[0]]
@@ -162,7 +171,7 @@ class PredecessorDecoder(Module):
         left_h = h[edge_index[0]]
         right_h = h[edge_index[1]]
 
-        out = self.layers(torch.cat((left_encoded, left_h, right_encoded, right_h), axis=1))
+        out = self.layers(torch.cat((left_h, right_h, edge_attr.unsqueeze(1)), axis=1))
 
         result = torch.full((h.shape[0], h.shape[0]), -1e9).to(device)
         result[left_edge, right_edge] = out.squeeze(-1)
